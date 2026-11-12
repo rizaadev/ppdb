@@ -1,0 +1,25 @@
+# Local runtime data & storage
+var/
+backend/var/
+tmp-bin/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+
+# Go build artifacts
+*.exe
+*.test
+*.out
+backend/bin/
+backend/web/dist/assets/
+
+# Frontend dependencies & build
+frontend/node_modules/
+frontend/dist/
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+

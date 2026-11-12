@@ -1,0 +1,50 @@
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--space-3);
+}
+
+.kpiLabel {
+  font-size: var(--text-caption);
+  color: var(--text-muted);
+}
+
+.kpiValue {
+  margin-top: var(--space-1);
+  font-size: var(--text-h2);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.actionGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.proofBox {
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-subtle);
+  padding: var(--space-3);
+  margin: var(--space-3) 0;
+  text-align: center;
+}
+
+.proofImg {
+  max-width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+}
+
+.noteTextarea {
+  width: 100%;
+  min-height: 78px;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  resize: vertical;
+  margin-top: var(--space-2);
+}
+

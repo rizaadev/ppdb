@@ -1,0 +1,99 @@
+.stepper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  text-align: left;
+  width: 100%;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.step:hover:not(:disabled) {
+  background-color: var(--bg-subtle);
+}
+
+.active {
+  background-color: var(--brand-tint);
+  border-color: var(--brand-border);
+}
+
+.circle {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-badge);
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+}
+
+.done .circle {
+  background-color: var(--status-success-bg);
+  border-color: var(--status-success-border);
+  color: var(--status-success-fg);
+}
+
+.active .circle {
+  background-color: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: var(--brand-foreground);
+}
+
+.label {
+  font-size: var(--text-label);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  font-size: var(--text-caption);
+  color: var(--text-muted);
+}
+
+.mobileCompact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.mobileDots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mobileDot {
+  width: 18px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background-color: var(--bg-muted);
+}
+
+.mobileDotActive {
+  background-color: var(--brand-primary);
+  width: 26px;
+}
+
+.mobileDotDone {
+  background-color: var(--status-success-fg);
+}
+

@@ -1,0 +1,44 @@
+.bar {
+  position: fixed;
+  right: var(--space-4);
+  bottom: 84px;
+  z-index: var(--z-devbar);
+  background-color: #0f172a;
+  color: #f8fafc;
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-3);
+  box-shadow: var(--shadow-modal);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-badge);
+}
+
+@media (min-width: 768px) {
+  .bar {
+    bottom: var(--space-4);
+  }
+}
+
+.select {
+  background-color: #1e293b;
+  color: #ffffff;
+  border: 1px solid #334155;
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: var(--text-badge);
+}
+
+.pillLink {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  background-color: #1e293b;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.pillLink:hover {
+  background-color: #334155;
+}
+

@@ -1,0 +1,1371 @@
+openapi: 3.1.0
+info:
+  title: Platform Penerimaan Murid Baru API (SPMB / PMBM / Mandiri)
+  version: 1.0.0
+  description: >
+    Kontrak REST API multi-tenant dan white-label untuk portal publik,
+    portal pendaftar/orang tua, workspace panitia/penguji/keuangan/yayasan,
+    serta webhook pembayaran dan verifikasi TLS internal Caddy.
+
+servers:
+  - url: https://{tenantDomain}
+    description: Production Custom Domain / Subdomain Tenant
+    variables:
+      tenantDomain:
+        default: demo.spmb-platform.id
+  - url: http://localhost:8080
+    description: Local Development Server (gunakan header X-Tenant-Slug)
+
+tags:
+  - name: Infra
+  - name: Public
+  - name: Auth
+  - name: Applicant
+  - name: AdminSetup
+  - name: Verification
+  - name: Finance
+  - name: AssessmentRanking
+  - name: ExportAudit
+  - name: Webhooks
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    TenantSlugDevHeader:
+      name: X-Tenant-Slug
+      in: header
+      required: false
+      description: Fallback resolusi tenant pada lingkungan lokal selain header Host.
+      schema:
+        type: string
+    IdempotencyKeyHeader:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: Kunci idempotensi untuk mencegah mutasi ganda saat koneksi ulang.
+      schema:
+        type: string
+        format: uuid
+    ApplicationIdPath:
+      name: applicationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              example: VALIDATION_ERROR
+            message:
+              type: string
+            fields:
+              type: object
+              additionalProperties:
+                type: string
+
+    PaginationMeta:
+      type: object
+      properties:
+        next_cursor_created_at:
+          type: string
+          format: date-time
+          nullable: true
+        next_cursor_id:
+          type: string
+          format: uuid
+          nullable: true
+        limit:
+          type: integer
+
+    TerminologyPreset:
+      type: string
+      enum: [spmb, pmbm, mandiri]
+
+    ApplicationStatus:
+      type: string
+      enum:
+        - account_created
+        - track_selected
+        - awaiting_payment
+        - payment_verified
+        - draft_form
+        - submitted
+        - under_verification
+        - revision_required
+        - verified
+        - selection_in_progress
+        - ranked
+        - accepted
+        - waitlisted
+        - rejected
+        - re_enrollment
+        - enrolled
+        - withdrawn
+
+    TenantRole:
+      type: string
+      enum:
+        - tenant_admin
+        - unit_admin
+        - verifier
+        - examiner
+        - treasurer
+        - principal
+
+    DocumentReviewStatus:
+      type: string
+      enum: [pending, approved, rejected_for_revision]
+
+    SelectionMode:
+      type: string
+      enum: [rule_based, test_based, hybrid, direct]
+
+    PaymentPurpose:
+      type: string
+      enum: [registration_fee, re_enrollment_fee]
+
+    PaymentMethod:
+      type: string
+      enum: [qris, va, ewallet, manual_transfer]
+
+    PaymentStatus:
+      type: string
+      enum: [pending, paid, failed, expired, refunded]
+
+    ExportFormat:
+      type: string
+      enum: [dapodik_xlsx, emis_xlsx, custom_csv]
+
+    PublicPortalConfig:
+      type: object
+      required: [tenant, units, periods]
+      properties:
+        tenant:
+          type: object
+          required: [id, slug, name, institution_type, terminology_preset, theme_config]
+          properties:
+            id:
+              type: string
+              format: uuid
+            slug:
+              type: string
+            name:
+              type: string
+            institution_type:
+              type: string
+              enum: [school, madrasah, foundation, pesantren]
+            terminology_preset:
+              $ref: "#/components/schemas/TerminologyPreset"
+            terminology_overrides:
+              type: object
+              additionalProperties:
+                type: string
+            theme_config:
+              type: object
+              properties:
+                primary_color:
+                  type: string
+                logo_url:
+                  type: string
+                  nullable: true
+                tagline:
+                  type: string
+        units:
+          type: array
+          items:
+            $ref: "#/components/schemas/UnitSummary"
+        periods:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicPeriod"
+
+    UnitSummary:
+      type: object
+      required: [id, code, name, education_level]
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        education_level:
+          type: string
+          enum: [ra_tk, sd_mi, smp_mts, sma_ma, smk_mak, pesantren]
+        address:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+
+    PublicPeriod:
+      type: object
+      required: [id, unit_id, academic_year, name, opens_at, closes_at, tracks]
+      properties:
+        id:
+          type: string
+          format: uuid
+        unit_id:
+          type: string
+          format: uuid
+        academic_year:
+          type: string
+        name:
+          type: string
+        opens_at:
+          type: string
+          format: date-time
+        closes_at:
+          type: string
+          format: date-time
+        announcement_at:
+          type: string
+          format: date-time
+          nullable: true
+        results_published_at:
+          type: string
+          format: date-time
+          nullable: true
+        tracks:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicTrack"
+
+    PublicTrack:
+      type: object
+      required: [id, code, display_name, selection_mode, quota, registration_fee_idr]
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        display_name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        selection_mode:
+          $ref: "#/components/schemas/SelectionMode"
+        quota:
+          type: integer
+        active_applicant_count:
+          type: integer
+        registration_fee_idr:
+          type: integer
+          format: int64
+        requires_coordinates:
+          type: boolean
+        requires_achievements:
+          type: boolean
+
+    AuthTokenBundle:
+      type: object
+      required: [access_token, refresh_token, expires_in_seconds, user]
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_in_seconds:
+          type: integer
+        user:
+          $ref: "#/components/schemas/CurrentUser"
+
+    CurrentUser:
+      type: object
+      required: [id, full_name, is_platform_admin, roles]
+      properties:
+        id:
+          type: string
+          format: uuid
+        full_name:
+          type: string
+        whatsapp_phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        is_platform_admin:
+          type: boolean
+        roles:
+          type: array
+          items:
+            type: object
+            required: [tenant_id, role]
+            properties:
+              tenant_id:
+                type: string
+                format: uuid
+              unit_id:
+                type: string
+                format: uuid
+                nullable: true
+              role:
+                $ref: "#/components/schemas/TenantRole"
+
+    ApplicationSummary:
+      type: object
+      required: [id, registration_no, status, unit_id, period_id, track_id, version]
+      properties:
+        id:
+          type: string
+          format: uuid
+        registration_no:
+          type: string
+        status:
+          $ref: "#/components/schemas/ApplicationStatus"
+        unit_id:
+          type: string
+          format: uuid
+        period_id:
+          type: string
+          format: uuid
+        track_id:
+          type: string
+          format: uuid
+        student_name:
+          type: string
+          nullable: true
+        distance_meters:
+          type: integer
+          nullable: true
+        final_score:
+          type: string
+          nullable: true
+        rank_position:
+          type: integer
+          nullable: true
+        version:
+          type: integer
+        submitted_at:
+          type: string
+          format: date-time
+          nullable: true
+        decided_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    ApplicantProfileInput:
+      type: object
+      required: [full_name]
+      properties:
+        full_name:
+          type: string
+        nik:
+          type: string
+          pattern: "^[0-9]{16}$"
+          nullable: true
+        kk_number:
+          type: string
+          pattern: "^[0-9]{16}$"
+          nullable: true
+        kk_issued_date:
+          type: string
+          format: date
+          nullable: true
+        nisn:
+          type: string
+          pattern: "^[0-9]{10}$"
+          nullable: true
+        birth_place:
+          type: string
+          nullable: true
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+        gender:
+          type: string
+          enum: [L, P]
+          nullable: true
+        religion:
+          type: string
+          nullable: true
+        citizenship:
+          type: string
+          default: WNI
+        child_order:
+          type: integer
+          nullable: true
+        siblings_count:
+          type: integer
+          nullable: true
+        special_needs_code:
+          type: string
+          nullable: true
+        address_street:
+          type: string
+          nullable: true
+        rt:
+          type: string
+          nullable: true
+        rw:
+          type: string
+          nullable: true
+        village_code:
+          type: string
+          nullable: true
+        village_name:
+          type: string
+          nullable: true
+        district_code:
+          type: string
+          nullable: true
+        district_name:
+          type: string
+          nullable: true
+        regency_code:
+          type: string
+          nullable: true
+        regency_name:
+          type: string
+          nullable: true
+        province_code:
+          type: string
+          nullable: true
+        province_name:
+          type: string
+          nullable: true
+        postal_code:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+        prev_school_name:
+          type: string
+          nullable: true
+        prev_school_npsn:
+          type: string
+          nullable: true
+        graduation_year:
+          type: integer
+          nullable: true
+        ijazah_number:
+          type: string
+          nullable: true
+        extra_answers:
+          type: object
+          additionalProperties: true
+
+    GuardianInput:
+      type: object
+      required: [relation, full_name, is_primary_contact]
+      properties:
+        relation:
+          type: string
+          enum: [father, mother, guardian]
+        full_name:
+          type: string
+        nik:
+          type: string
+          pattern: "^[0-9]{16}$"
+          nullable: true
+        birth_year:
+          type: integer
+          nullable: true
+        education_level:
+          type: string
+          nullable: true
+        occupation:
+          type: string
+          nullable: true
+        income_bracket:
+          type: string
+          nullable: true
+        phone_whatsapp:
+          type: string
+          nullable: true
+        is_primary_contact:
+          type: boolean
+
+    PresignedUploadResponse:
+      type: object
+      required: [upload_url, storage_key, expires_at]
+      properties:
+        upload_url:
+          type: string
+          format: uri
+        storage_key:
+          type: string
+        required_headers:
+          type: object
+          additionalProperties:
+            type: string
+        expires_at:
+          type: string
+          format: date-time
+
+paths:
+  /healthz:
+    get:
+      tags: [Infra]
+      summary: Health check aplikasi & koneksi database
+      responses:
+        "200":
+          description: Layanan sehat
+
+  /internal/tls/verify:
+    get:
+      tags: [Infra]
+      summary: Verifikasi custom domain untuk On-Demand TLS Caddy
+      parameters:
+        - name: domain
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Domain sah dan terdaftar
+        "403":
+          description: Domain tidak terdaftar (Caddy batal menerbitkan SSL)
+
+  /api/v1/public/portal:
+    get:
+      tags: [Public]
+      summary: Konfigurasi portal sekolah, tema, preset istilah, unit, periode, dan jalur aktif
+      parameters:
+        - $ref: "#/components/parameters/TenantSlugDevHeader"
+      responses:
+        "200":
+          description: Konfigurasi portal publik
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PublicPortalConfig"
+
+  /api/v1/public/check-status:
+    post:
+      tags: [Public]
+      summary: Cek status pendaftaran cepat (terbatas & data sensitif disamarkan)
+      parameters:
+        - $ref: "#/components/parameters/TenantSlugDevHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [registration_no]
+              properties:
+                registration_no:
+                  type: string
+      responses:
+        "200":
+          description: Ringkasan status pendaftaran (tanpa NIK/alamat)
+        "404":
+          description: Nomor pendaftaran tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/otp/request:
+    post:
+      tags: [Auth]
+      summary: Meminta kode OTP WhatsApp untuk registrasi atau login wali/pendaftar
+      parameters:
+        - $ref: "#/components/parameters/TenantSlugDevHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [whatsapp_phone, purpose]
+              properties:
+                whatsapp_phone:
+                  type: string
+                  example: "+6281234567890"
+                purpose:
+                  type: string
+                  enum: [register, login, reset_pin, verify_phone]
+      responses:
+        "202":
+          description: OTP masuk antrean pengiriman WhatsApp (River worker)
+        "429":
+          description: Terlalu banyak permintaan OTP
+
+  /api/v1/auth/otp/verify:
+    post:
+      tags: [Auth]
+      summary: Verifikasi kode OTP WhatsApp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [whatsapp_phone, purpose, code]
+              properties:
+                whatsapp_phone:
+                  type: string
+                purpose:
+                  type: string
+                  enum: [register, login, reset_pin, verify_phone]
+                code:
+                  type: string
+                full_name:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Terverifikasi dan mengembalikan bundle token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/AuthTokenBundle"
+
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login menggunakan Email atau No. WhatsApp dan Password
+      parameters:
+        - $ref: "#/components/parameters/TenantSlugDevHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier, password]
+              properties:
+                identifier:
+                  type: string
+                  description: Email staf/panitia atau No. WhatsApp pendaftar
+                password:
+                  type: string
+                  format: password
+      responses:
+        "200":
+          description: Login berhasil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/AuthTokenBundle"
+
+  /api/v1/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Memperbarui access token menggunakan refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        "200":
+          description: Token diperbarui
+
+  /api/v1/me:
+    get:
+      tags: [Auth]
+      security: [{BearerAuth: []}]
+      summary: Profil pengguna aktif dan daftar hak akses peran
+      responses:
+        "200":
+          description: Informasi akun aktif
+
+  /api/v1/applicant/applications:
+    get:
+      tags: [Applicant]
+      security: [{BearerAuth: []}]
+      summary: Daftar pendaftaran anak milik akun orang tua/wali yang sedang login
+      responses:
+        "200":
+          description: Daftar aplikasi milik wali
+    post:
+      tags: [Applicant]
+      security: [{BearerAuth: []}]
+      summary: Memulai pendaftaran baru (memilih unit, periode, dan jalur)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKeyHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [unit_id, period_id, track_id, student_full_name]
+              properties:
+                unit_id:
+                  type: string
+                  format: uuid
+                period_id:
+                  type: string
+                  format: uuid
+                track_id:
+                  type: string
+                  format: uuid
+                student_full_name:
+                  type: string
+      responses:
+        "201":
+          description: Aplikasi dibuat (status awaiting_payment atau draft_form sesuai konfigurasi biaya jalur)
+
+  /api/v1/applicant/applications/{applicationId}:
+    get:
+      tags: [Applicant]
+      security: [{BearerAuth: []}]
+      summary: Detail lengkap aplikasi, biodata, orang tua, dokumen, dan status terkini
+      parameters:
+        - $ref: "#/components/parameters/ApplicationIdPath"
+      responses:
+        "200":
+          description: Detail aplikasi
+
+  /api/v1/applicant/applications/{applicationId}/profile:
+    patch:
+      tags: [Applicant]
+      security: [{BearerAuth: []}]
+      summary: Simpan / auto-save draft biodata calon murid & titik koordinat
+      parameters:
+        - $ref: "#/components/parameters/ApplicationIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicantProfileInput"
+      responses:
+        "200":
+          description: Biodata tersimpan dan jarak dihitung bila koordinat diisi
+
+  /api/v1/applicant/applications/{applicationId}/guardians:
+    put:
+      tags: [Applicant]
+      security: [{BearerAuth: []}]
+      summary: Simpan data Ayah, Ibu, dan/atau Wali
+      parameters:
+        - $ref: "#/components/parameters/ApplicationIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [guardians]
+              properties:
+                guardians:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/GuardianInput"
+      responses:
+        "200":
+          description: Data orang tua/wali tersimpan
+
+  /api/v1/applicant/applications/{applicationId}/documents/presign-upload:
+    post:
+      tags: [Applicant]
+      security: [{BearerAuth: []}]
+      summary: Meminta URL unggah privat sementara (R2/MinIO) untuk berkas terkompresi
+      parameters:
+        - $ref: "#/components/parameters/ApplicationIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [requirement_id, filename, mime_type, size_bytes]
+              properties:
+                requirement_id:
+                  type: string
+                  format: uuid
+                filename:
+                  type: string
+                mime_type:
+                  type: string
+                size_bytes:
+                  type: integer
+      responses:
+        "200":
+          description: Pre-signed upload URL diterbitkan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PresignedUploadResponse"
+
+  /api/v1/applicant/applications/{applicationId}/documents/confirm:
+    post:
+      tags: [Applicant]
+      security: [{BearerAuth: []}]
+      summary: Mengonfirmasi unggahan berkas ke penyimpanan privat selesai
+      parameters:
+        - $ref: "#/components/parameters/ApplicationIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [requirement_id, storage_key, original_filename, mime_type, size_bytes]
+              properties:
+                requirement_id:
+                  type: string
+                  format: uuid
+                storage_key:
+                  type: string
+                original_filename:
+                  type: string
+                mime_type:
+                  type: string
+                size_bytes:
+                  type: integer
+      responses:
+        "200":
+          description: Metadata berkas dicatat
+
+  /api/v1/applicant/applications/{applicationId}/documents/{documentId}/presign-download:
+    get:
+      tags: [Applicant]
+      security: [{BearerAuth: []}]
+      summary: Mendapatkan Signed URL berumur pendek untuk melihat pratinjau berkas privat
+      parameters:
+        - $ref: "#/components/parameters/ApplicationIdPath"
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Signed URL sementara diterbitkan
+
+  /api/v1/applicant/applications/{applicationId}/submit:
+    post:
+      tags: [Applicant]
+      security: [{BearerAuth: []}]
+      summary: Submit final pendaftaran atau kirim perbaikan berkas (revision_required -> submitted)
+      parameters:
+        - $ref: "#/components/parameters/ApplicationIdPath"
+        - $ref: "#/components/parameters/IdempotencyKeyHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [version]
+              properties:
+                version:
+                  type: integer
+      responses:
+        "200":
+          description: Status berubah menjadi submitted dan notifikasi masuk antrean
+        "409":
+          description: Konflik versi atau syarat berkas belum lengkap
+
+  /api/v1/applicant/applications/{applicationId}/payments:
+    post:
+      tags: [Applicant]
+      security: [{BearerAuth: []}]
+      summary: Membuat transaksi tagihan biaya formulir atau daftar ulang
+      parameters:
+        - $ref: "#/components/parameters/ApplicationIdPath"
+        - $ref: "#/components/parameters/IdempotencyKeyHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [purpose, method]
+              properties:
+                purpose:
+                  $ref: "#/components/schemas/PaymentPurpose"
+                method:
+                  $ref: "#/components/schemas/PaymentMethod"
+      responses:
+        "201":
+          description: Tagihan dibuat (QRIS/VA/Instruksi Transfer Manual)
+
+  /api/v1/applicant/applications/{applicationId}/payments/{paymentId}/manual-proof:
+    post:
+      tags: [Applicant]
+      security: [{BearerAuth: []}]
+      summary: Mengaitkan bukti transfer manual yang sudah diunggah ke presigned storage
+      parameters:
+        - $ref: "#/components/parameters/ApplicationIdPath"
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [proof_storage_key]
+              properties:
+                proof_storage_key:
+                  type: string
+      responses:
+        "200":
+          description: Bukti transfer tersimpan untuk verifikasi bendahara
+
+  /api/v1/applicant/applications/{applicationId}/re-enroll:
+    post:
+      tags: [Applicant]
+      security: [{BearerAuth: []}]
+      summary: Konfirmasi daftar ulang oleh pendaftar yang dinyatakan lulus (accepted)
+      parameters:
+        - $ref: "#/components/parameters/ApplicationIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [version, agreement_accepted]
+              properties:
+                version:
+                  type: integer
+                agreement_accepted:
+                  type: boolean
+                extra_answers:
+                  type: object
+                  additionalProperties: true
+      responses:
+        "200":
+          description: Status menjadi re_enrollment atau langsung enrolled jika gratis
+
+  /api/v1/admin/tenant/settings:
+    get:
+      tags: [AdminSetup]
+      security: [{BearerAuth: []}]
+      summary: Mengambil pengaturan tema, domain, dan preset terminologi tenant
+      responses:
+        "200":
+          description: Pengaturan tenant
+    patch:
+      tags: [AdminSetup]
+      security: [{BearerAuth: []}]
+      summary: Memperbarui pengaturan white-label tenant (hanya tenant_admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                terminology_preset:
+                  $ref: "#/components/schemas/TerminologyPreset"
+                terminology_overrides:
+                  type: object
+                  additionalProperties:
+                    type: string
+                theme_config:
+                  type: object
+                  additionalProperties: true
+                custom_domain:
+                  type: string
+      responses:
+        "200":
+          description: Pengaturan diperbarui
+
+  /api/v1/admin/units:
+    get:
+      tags: [AdminSetup]
+      security: [{BearerAuth: []}]
+      summary: Daftar unit pendidikan dalam tenant
+      responses:
+        "200":
+          description: Daftar unit
+    post:
+      tags: [AdminSetup]
+      security: [{BearerAuth: []}]
+      summary: Membuat unit jenjang baru (khusus tenant_admin)
+      responses:
+        "201":
+          description: Unit dibuat
+
+  /api/v1/admin/periods:
+    post:
+      tags: [AdminSetup]
+      security: [{BearerAuth: []}]
+      summary: Membuka periode/gelombang pendaftaran pada sebuah unit
+      responses:
+        "201":
+          description: Periode dibuat
+
+  /api/v1/admin/tracks:
+    post:
+      tags: [AdminSetup]
+      security: [{BearerAuth: []}]
+      summary: Membuat jalur penerimaan beserta kuota, biaya, dan mode seleksi
+      responses:
+        "201":
+          description: Jalur dibuat
+
+  /api/v1/admin/tracks/{trackId}/requirements:
+    put:
+      tags: [AdminSetup]
+      security: [{BearerAuth: []}]
+      summary: Menyimpan daftar syarat berkas dinamis pada suatu jalur
+      parameters:
+        - name: trackId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Syarat jalur diperbarui
+
+  /api/v1/admin/applications:
+    get:
+      tags: [Verification]
+      security: [{BearerAuth: []}]
+      summary: Daftar pendaftar dengan cursor pagination dan filter unit/periode/jalur/status
+      parameters:
+        - name: unit_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: period_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: track_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/ApplicationStatus"
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 25
+            maximum: 100
+      responses:
+        "200":
+          description: Halaman daftar pendaftar
+
+  /api/v1/admin/applications/claim-next:
+    post:
+      tags: [Verification]
+      security: [{BearerAuth: []}]
+      summary: Mengambil pendaftar antrean submitted berikutnya secara atomik (FOR UPDATE SKIP LOCKED)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [unit_id]
+              properties:
+                unit_id:
+                  type: string
+                  format: uuid
+      responses:
+        "200":
+          description: Pendaftar diklaim ke under_verification untuk panel verifikator
+        "404":
+          description: Antrean verifikasi kosong
+
+  /api/v1/admin/applications/{applicationId}/documents/{documentId}/review:
+    patch:
+      tags: [Verification]
+      security: [{BearerAuth: []}]
+      summary: Menyetujui atau menolak 1 berkas spesifik dengan catatan alasan
+      parameters:
+        - $ref: "#/components/parameters/ApplicationIdPath"
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  $ref: "#/components/schemas/DocumentReviewStatus"
+                review_note:
+                  type: string
+      responses:
+        "200":
+          description: Status dokumen diperbarui & dicatat di audit log
+
+  /api/v1/admin/applications/{applicationId}/complete-verification:
+    post:
+      tags: [Verification]
+      security: [{BearerAuth: []}]
+      summary: Menutup verifikasi (ke verified jika semua sah, atau revision_required jika ada yang ditolak)
+      parameters:
+        - $ref: "#/components/parameters/ApplicationIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [version]
+              properties:
+                version:
+                  type: integer
+                summary_note:
+                  type: string
+      responses:
+        "200":
+          description: Keputusan verifikasi disimpan dan notifikasi WhatsApp diantrekan
+
+  /api/v1/admin/payments:
+    get:
+      tags: [Finance]
+      security: [{BearerAuth: []}]
+      summary: Daftar transaksi pembayaran untuk bendahara
+      responses:
+        "200":
+          description: Daftar transaksi
+
+  /api/v1/admin/payments/{paymentId}/verify-manual:
+    post:
+      tags: [Finance]
+      security: [{BearerAuth: []}]
+      summary: Verifikasi atau tolak bukti transfer manual oleh bendahara
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision:
+                  type: string
+                  enum: [paid, failed]
+                note:
+                  type: string
+      responses:
+        "200":
+          description: Status transaksi & aplikasi diperbarui dalam 1 transaksi DB
+
+  /api/v1/admin/applications/{applicationId}/scores:
+    put:
+      tags: [AssessmentRanking]
+      security: [{BearerAuth: []}]
+      summary: Input atau perbarui komponen skor ujian/wawancara oleh penguji
+      parameters:
+        - $ref: "#/components/parameters/ApplicationIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scores]
+              properties:
+                scores:
+                  type: array
+                  items:
+                    type: object
+                    required: [component_code, raw_score, weight_pct]
+                    properties:
+                      component_code:
+                        type: string
+                      raw_score:
+                        type: number
+                      weight_pct:
+                        type: number
+                      notes:
+                        type: string
+      responses:
+        "200":
+          description: Skor diperbarui dan final_score dihitung ulang
+
+  /api/v1/admin/tracks/{trackId}/simulate-ranking:
+    post:
+      tags: [AssessmentRanking]
+      security: [{BearerAuth: []}]
+      summary: Simulasi perankingan kuota & limpahan sebelum hasil dikunci
+      parameters:
+        - name: trackId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Daftar peringkat simulasi
+
+  /api/v1/admin/periods/{periodId}/publish-results:
+    post:
+      tags: [AssessmentRanking]
+      security: [{BearerAuth: []}]
+      summary: Mengunci status kelulusan (accepted/waitlisted/rejected) dan merilis pengumuman
+      parameters:
+        - name: periodId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: "#/components/parameters/IdempotencyKeyHeader"
+      responses:
+        "200":
+          description: Hasil kelulusan dikunci & notifikasi kelulusan diantrekan ke River
+
+  /api/v1/admin/applications/{applicationId}/promote-waitlist:
+    post:
+      tags: [AssessmentRanking]
+      security: [{BearerAuth: []}]
+      summary: Menaikkan pendaftar cadangan (waitlisted) menjadi diterima (accepted)
+      parameters:
+        - $ref: "#/components/parameters/ApplicationIdPath"
+      responses:
+        "200":
+          description: Status naik ke accepted
+
+  /api/v1/admin/exports:
+    post:
+      tags: [ExportAudit]
+      security: [{BearerAuth: []}]
+      summary: Membuat job asinkron ekspor Dapodik, EMIS, atau CSV via River worker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [unit_id, period_id, format]
+              properties:
+                unit_id:
+                  type: string
+                  format: uuid
+                period_id:
+                  type: string
+                  format: uuid
+                format:
+                  $ref: "#/components/schemas/ExportFormat"
+      responses:
+        "202":
+          description: Job ekspor dijadwalkan
+
+  /api/v1/admin/exports/{jobId}:
+    get:
+      tags: [ExportAudit]
+      security: [{BearerAuth: []}]
+      summary: Cek status job ekspor & dapatkan Signed URL file unduhan bila selesai
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Status job ekspor
+
+  /api/v1/admin/audit-logs:
+    get:
+      tags: [ExportAudit]
+      security: [{BearerAuth: []}]
+      summary: Riwayat audit log perubahan status, nilai, pembayaran, dan ekspor
+      parameters:
+        - name: application_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Daftar entri audit log
+
+  /api/v1/webhooks/payments/{provider}:
+    post:
+      tags: [Webhooks]
+      summary: Penerima webhook resmi Payment Gateway (Midtrans / Xendit / Tripay)
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Webhook tervalidasi dan diproses secara idempoten
+        "401":
+          description: Signature webhook tidak valid
+

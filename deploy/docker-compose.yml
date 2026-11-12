@@ -1,0 +1,118 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pbdb}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-pbdb}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pbdb} -d ${POSTGRES_DB:-pbdb}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:?Set S3_ACCESS_KEY in .env}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:?Set S3_SECRET_KEY in .env}
+      MINIO_API_CORS_ALLOW_ORIGIN: ${MINIO_CORS_ORIGINS:-*}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "127.0.0.1:9001:9001"
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    environment:
+      S3_BUCKET: ${S3_BUCKET:-pbdb-private-docs}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?Set S3_ACCESS_KEY in .env}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?Set S3_SECRET_KEY in .env}
+    entrypoint: >
+      /bin/sh -c " until mc alias set local http://minio:9000 \"$${S3_ACCESS_KEY}\" \"$${S3_SECRET_KEY}\"; do echo 'waiting for minio...'; sleep 2; done && mc mb --ignore-existing \"local/$${S3_BUCKET}\" && mc anonymous set none \"local/$${S3_BUCKET}\" "
+    restart: "no"
+
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - path: ../.env
+        required: true
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      APP_MODE: ${APP_MODE:-all}
+      PORT: "8080"
+      BASE_DOMAIN: ${BASE_DOMAIN:?Set BASE_DOMAIN in .env}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://${BASE_DOMAIN}}
+      DEV_FALLBACK_TENANT_SLUG: ${DEV_FALLBACK_TENANT_SLUG:-demo-spmb}
+      TRUSTED_PROXY_CIDRS: ${TRUSTED_PROXY_CIDRS:-127.0.0.1/32,::1/128,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+      DATABASE_URL: ${DATABASE_URL:-postgres://${POSTGRES_USER:-pbdb}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-pbdb}?sslmode=disable}
+      MIGRATION_DATABASE_URL: ${MIGRATION_DATABASE_URL:-}
+      DB_AUTO_MIGRATE: ${DB_AUTO_MIGRATE:-true}
+      DB_SEED_DEMO: ${DB_SEED_DEMO:-false}
+      ALLOW_DEMO_SEED_IN_PROD: ${ALLOW_DEMO_SEED_IN_PROD:-false}
+      ALLOW_MOCK_PROVIDERS_IN_PROD: ${ALLOW_MOCK_PROVIDERS_IN_PROD:-false}
+      RIVER_ENABLED: ${RIVER_ENABLED:-true}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET (>=32 chars) in .env}
+      OTP_SECRET: ${OTP_SECRET:?Set OTP_SECRET (>=16 chars) in .env}
+      DOCUMENT_SIGNING_SECRET: ${DOCUMENT_SIGNING_SECRET:?Set DOCUMENT_SIGNING_SECRET (>=32 chars) in .env}
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-s3}
+      LOCAL_STORAGE_DIR: ${LOCAL_STORAGE_DIR:-/var/lib/pbdb/storage}
+      S3_ENDPOINT: ${S3_ENDPOINT:-http://minio:9000}
+      S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT:-https://s3.${BASE_DOMAIN}}
+      S3_REGION: ${S3_REGION:-auto}
+      S3_BUCKET: ${S3_BUCKET:-pbdb-private-docs}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?Set S3_ACCESS_KEY in .env}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?Set S3_SECRET_KEY in .env}
+      S3_USE_PATH_STYLE: ${S3_USE_PATH_STYLE:-true}
+      PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET:?Set PAYMENT_WEBHOOK_SECRET in .env}
+      PAYMENT_GATEWAY_PROVIDER: ${PAYMENT_GATEWAY_PROVIDER:-midtrans_snap}
+      PAYMENT_MIDTRANS_SERVER_KEY: ${PAYMENT_MIDTRANS_SERVER_KEY:-}
+      PAYMENT_MIDTRANS_CLIENT_KEY: ${PAYMENT_MIDTRANS_CLIENT_KEY:-}
+      PAYMENT_MIDTRANS_SANDBOX: ${PAYMENT_MIDTRANS_SANDBOX:-false}
+      WHATSAPP_GATEWAY_PROVIDER: ${WHATSAPP_GATEWAY_PROVIDER:-fonnte}
+      WHATSAPP_GATEWAY_URL: ${WHATSAPP_GATEWAY_URL:-https://api.fonnte.com/send}
+      WHATSAPP_GATEWAY_TOKEN: ${WHATSAPP_GATEWAY_TOKEN:-}
+    volumes:
+      - app_storage:/var/lib/pbdb/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      BASE_DOMAIN: ${BASE_DOMAIN:?Set BASE_DOMAIN in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+      - minio
+    ports:
+      - "80:80"
+      - "443:443"
+
+volumes:
+  pg_data:
+  minio_data:
+  app_storage:
+  caddy_data:
+  caddy_config:
