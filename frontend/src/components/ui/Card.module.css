@@ -4,18 +4,21 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   padding: var(--space-5);
+  position: relative;
+  transition: all var(--transition-fast);
 }
 
 .interactive {
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  cursor: pointer;
 }
 
 .interactive:hover {
   border-color: var(--brand-border);
-  box-shadow: var(--shadow-popover);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
 }
 
 .compact {
   padding: var(--space-4);
+  border-radius: var(--radius-md);
 }
-

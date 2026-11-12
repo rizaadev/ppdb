@@ -456,7 +456,8 @@ func (h *StaffApplicationsHandler) GetDashboardStats(w http.ResponseWriter, r *h
 
 	stats, err := h.Service.GetDashboardStats(r.Context(), tenant.ID, unitID)
 	if err != nil {
-		respond.Error(w, http.StatusInternalServerError, "DASHBOARD_STATS_ERROR", "Gagal memuat ringkasan statistik pendaftaran.", nil)
+		fmt.Printf("[DashboardStatsError] tenant=%s unit=%v err=%v\n", tenant.ID, unitID, err)
+		respond.Error(w, http.StatusInternalServerError, "DASHBOARD_STATS_ERROR", fmt.Sprintf("Gagal memuat ringkasan statistik pendaftaran: %v", err), nil)
 		return
 	}
 

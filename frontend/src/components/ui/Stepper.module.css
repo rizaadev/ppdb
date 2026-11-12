@@ -14,7 +14,8 @@
   background: transparent;
   text-align: left;
   width: 100%;
-  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+  transition: all var(--transition-fast);
+  cursor: pointer;
 }
 
 .step:hover:not(:disabled) {
@@ -27,8 +28,8 @@
 }
 
 .circle {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: var(--radius-pill);
   display: inline-flex;
   align-items: center;
@@ -39,61 +40,33 @@
   border: 1px solid var(--border-strong);
   background-color: var(--bg-surface);
   color: var(--text-secondary);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-xs);
 }
 
 .done .circle {
-  background-color: var(--status-success-bg);
-  border-color: var(--status-success-border);
-  color: var(--status-success-fg);
+  background-color: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: var(--brand-foreground);
 }
 
 .active .circle {
   background-color: var(--brand-primary);
   border-color: var(--brand-primary);
   color: var(--brand-foreground);
+  box-shadow: 0 0 0 3px var(--brand-tint);
 }
 
 .label {
   font-size: var(--text-label);
   font-weight: 600;
   color: var(--text-primary);
+  line-height: 1.25;
 }
 
-.subtitle {
+.sub {
   font-size: var(--text-caption);
   color: var(--text-muted);
+  line-height: 1.35;
+  margin-top: 2px;
 }
-
-.mobileCompact {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-}
-
-.mobileDots {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.mobileDot {
-  width: 18px;
-  height: 5px;
-  border-radius: var(--radius-pill);
-  background-color: var(--bg-muted);
-}
-
-.mobileDotActive {
-  background-color: var(--brand-primary);
-  width: 26px;
-}
-
-.mobileDotDone {
-  background-color: var(--status-success-fg);
-}
-

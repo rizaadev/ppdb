@@ -3,6 +3,7 @@
   display: flex;
   flex-direction: column;
   padding-bottom: 76px;
+  background-color: var(--bg-canvas);
 }
 
 @media (min-width: 768px) {
@@ -15,9 +16,11 @@
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
-  background-color: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-default);
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03);
 }
 
 .headerInner {
@@ -25,7 +28,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  min-height: 64px;
+  min-height: 68px;
 }
 
 .brand {
@@ -33,26 +36,29 @@
   align-items: center;
   gap: var(--space-3);
   min-width: 0;
+  text-decoration: none;
 }
 
 .brandMark {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
   background-color: var(--brand-primary);
   color: var(--brand-foreground);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+  font-weight: 800;
   font-size: var(--text-label);
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(4, 120, 87, 0.22);
 }
 
 .brandTitle {
   font-size: var(--text-body);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
+  letter-spacing: -0.015em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -61,26 +67,29 @@
 .brandSub {
   font-size: var(--text-badge);
   color: var(--text-muted);
+  font-weight: 500;
+  margin-top: 1px;
 }
 
 .navDesktop {
   display: none;
   align-items: center;
-  gap: var(--space-3);
+  gap: 6px;
 }
 
 .navLink {
   font-size: var(--text-label);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-secondary);
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  transition: color var(--transition-fast), background-color var(--transition-fast);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  transition: all var(--transition-fast);
+  text-decoration: none;
 }
 
 .navLink:hover {
   color: var(--brand-primary);
-  background-color: var(--bg-subtle);
+  background-color: var(--brand-tint);
 }
 
 @media (min-width: 900px) {
@@ -96,8 +105,8 @@
 .footer {
   border-top: 1px solid var(--border-default);
   background-color: var(--bg-surface);
-  padding: var(--space-10) 0 var(--space-6);
-  margin-top: var(--space-12);
+  padding: var(--space-12) 0 var(--space-8);
+  margin-top: var(--space-16);
   font-size: var(--text-caption);
   color: var(--text-secondary);
 }
@@ -106,7 +115,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-8);
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-10);
 }
 
 @media (min-width: 640px) {
@@ -137,7 +146,7 @@
 .footerLinkList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -146,16 +155,18 @@
 .footerLink {
   color: var(--text-secondary);
   text-decoration: none;
-  transition: color var(--transition-fast);
+  transition: all var(--transition-fast);
+  font-weight: 500;
 }
 
 .footerLink:hover {
   color: var(--brand-primary);
+  transform: translateX(2px);
 }
 
 .footerBottom {
   border-top: 1px solid var(--border-default);
-  padding-top: var(--space-5);
+  padding-top: var(--space-6);
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -171,7 +182,9 @@
   right: 0;
   bottom: 0;
   z-index: var(--z-sticky);
-  background-color: var(--bg-surface);
+  background-color: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--border-default);
   padding: var(--space-3) var(--space-4);
   display: grid;

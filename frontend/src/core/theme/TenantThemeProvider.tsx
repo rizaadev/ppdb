@@ -2,11 +2,12 @@ import { useEffect, type ReactNode } from 'react';
 
 function hexToRgb(hex: string): [number, number, number] {
   const clean = hex.replace('#', '').trim();
-  const full = clean.length === 3
-    ? clean.split('').map((c) => c + c).join('')
-    : clean.padEnd(6, '0').slice(0, 6);
+  const full =
+    clean.length === 3
+      ? clean.split('').map((c) => c + c).join('')
+      : clean.padEnd(6, '0').slice(0, 6);
   const num = Number.parseInt(full, 16);
-  if (Number.isNaN(num)) return [30, 58, 95];
+  if (Number.isNaN(num)) return [4, 120, 87]; // Default Deep Emerald
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 }
 
@@ -32,18 +33,17 @@ export function TenantThemeProvider({
 }) {
   useEffect(() => {
     const root = document.documentElement;
-    const baseHex = primaryColor || '#1E3A5F';
+    const baseHex = primaryColor || '#047857';
     const rgb = hexToRgb(baseHex);
     const lum = relativeLuminance(rgb);
     const foreground = lum > 0.45 ? '#0f172a' : '#ffffff';
 
     root.style.setProperty('--brand-primary', baseHex);
-    root.style.setProperty('--brand-primary-hover', darken(rgb, 0.84));
-    root.style.setProperty('--brand-tint', `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.09)`);
-    root.style.setProperty('--brand-border', `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.35)`);
+    root.style.setProperty('--brand-primary-hover', darken(rgb, 0.82));
+    root.style.setProperty('--brand-tint', `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.08)`);
+    root.style.setProperty('--brand-border', `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.28)`);
     root.style.setProperty('--brand-foreground', foreground);
   }, [primaryColor]);
 
   return children;
 }
-

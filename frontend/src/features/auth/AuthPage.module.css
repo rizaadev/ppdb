@@ -1,6 +1,12 @@
 .wrap {
   min-height: 100vh;
-  background-color: var(--bg-canvas);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: 
+    radial-gradient(120% 70% at 50% 0%, var(--brand-tint) 0%, rgba(255, 255, 255, 0.85) 50%, var(--bg-canvas) 100%),
+    radial-gradient(rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+  background-size: 100% 100%, 24px 24px;
   padding: var(--space-8) var(--space-4);
 }
 
@@ -8,6 +14,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  width: 100%;
 }
 
 .backLink {
@@ -18,37 +25,49 @@
   font-weight: 600;
   color: var(--brand-primary);
   text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+
+.backLink:hover {
+  opacity: 0.85;
 }
 
 .tabRow {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-2);
-  padding: var(--space-1);
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
   border-radius: var(--radius-md);
   background-color: var(--bg-subtle);
-  margin-bottom: var(--space-4);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-5);
 }
 
 .tabBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  min-height: 40px;
+  gap: 6px;
+  min-height: 38px;
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-secondary);
   font-weight: 600;
-  font-size: var(--text-label);
+  font-size: 0.8rem;
   cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tabBtn:hover {
+  color: var(--text-primary);
 }
 
 .tabBtnActive {
-  background-color: var(--bg-surface);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-card);
+  background-color: #ffffff;
+  color: var(--brand-primary);
+  box-shadow: var(--shadow-sm);
+  font-weight: 700;
 }
 
 .form {
@@ -64,7 +83,7 @@
 }
 
 .errorAlert {
-  padding: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   background-color: var(--status-danger-bg);
   color: var(--status-danger-fg);
@@ -75,7 +94,7 @@
 }
 
 .devOtpBox {
-  padding: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   background-color: var(--status-info-bg);
   color: var(--status-info-fg);
@@ -98,33 +117,3 @@
   color: var(--text-secondary);
   margin-bottom: var(--space-3);
 }
-
-.demoGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: var(--space-2);
-}
-
-.demoChip {
-  text-align: left;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-default);
-  background-color: var(--bg-subtle);
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: var(--text-badge);
-  color: var(--text-secondary);
-}
-
-.demoChip strong {
-  color: var(--text-primary);
-}
-
-.demoChip:hover {
-  border-color: var(--brand-primary);
-  background-color: var(--brand-tint);
-}
-

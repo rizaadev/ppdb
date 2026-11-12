@@ -1,24 +1,25 @@
 .kpiGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
 }
 
 .kpiCard {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  padding: var(--space-4);
+  padding: var(--space-5);
   border-radius: var(--radius-lg);
   background-color: var(--bg-surface);
   border: 1px solid var(--border-default);
   box-shadow: var(--shadow-card);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 
 .kpiCard:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-popover);
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--border-strong);
 }
 
 .kpiHeader {
@@ -28,8 +29,8 @@
 }
 
 .kpiIconWrap {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
@@ -40,17 +41,19 @@
   font-size: var(--text-caption);
   color: var(--text-secondary);
   font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .kpiValue {
-  font-size: 1.75rem;
+  font-size: 1.85rem;
   font-weight: 800;
   line-height: 1.15;
   color: var(--text-primary);
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
 .kpiSub {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
   display: flex;
   align-items: center;
@@ -60,19 +63,19 @@
 .twoColGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 @media (min-width: 992px) {
   .twoColGrid {
-    grid-template-columns: 3fr 2fr;
+    grid-template-columns: 3.2fr 1.8fr;
   }
 }
 
 .chartCard {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .chartHeader {
@@ -85,8 +88,9 @@
 
 .chartTitle {
   font-size: var(--text-h3);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 .chartSub {
@@ -96,29 +100,30 @@
 
 .svgWrap {
   width: 100%;
-  height: 220px;
+  height: 240px;
   position: relative;
 }
 
 .quickActionsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .actionBtn {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3);
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  background-color: var(--bg-subtle);
+  background-color: var(--bg-surface);
   border: 1px solid var(--border-default);
   color: var(--text-primary);
   font-size: var(--text-caption);
   font-weight: 600;
   text-align: left;
   cursor: pointer;
+  box-shadow: var(--shadow-xs);
   transition: all var(--transition-fast);
 }
 
@@ -126,6 +131,8 @@
   background-color: var(--brand-tint);
   border-color: var(--brand-border);
   color: var(--brand-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .trackList {
@@ -137,11 +144,16 @@
 .trackItem {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: var(--space-3);
+  gap: 8px;
+  padding: var(--space-4);
   border-radius: var(--radius-md);
   background-color: var(--bg-subtle);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--border-subtle);
+  transition: border-color var(--transition-fast);
+}
+
+.trackItem:hover {
+  border-color: var(--border-strong);
 }
 
 .trackItemHeader {
@@ -167,7 +179,7 @@
 .trackProgressFill {
   height: 100%;
   border-radius: var(--radius-pill);
-  transition: width 0.5s ease;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .activityList {
@@ -180,9 +192,9 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: var(--space-2);
-  padding: var(--space-2) 0;
-  border-bottom: 1px solid var(--border-default);
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-subtle);
   font-size: var(--text-caption);
 }
 

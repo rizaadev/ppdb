@@ -9,8 +9,11 @@
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
-  background-color: var(--bg-surface);
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-default);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
 }
 
 .topbarInner {
@@ -38,8 +41,9 @@
   font-size: var(--text-caption);
   font-weight: 600;
   color: var(--text-secondary);
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
 }
 
 .backLink:hover {
@@ -57,11 +61,18 @@
   min-height: 38px;
   padding: 0 var(--space-3);
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border-default);
   background-color: var(--bg-surface);
   font-size: var(--text-caption);
   font-weight: 600;
   color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.childSelect:focus {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px var(--brand-tint);
 }
 
 .saveIndicator {
@@ -69,8 +80,10 @@
   align-items: center;
   gap: 6px;
   font-size: var(--text-badge);
+  font-weight: 600;
   color: var(--status-success-fg);
   background-color: var(--status-success-bg);
+  border: 1px solid var(--status-success-border);
   padding: 4px 10px;
   border-radius: var(--radius-pill);
 }
@@ -80,12 +93,11 @@
   width: 100%;
   max-width: 1040px;
   margin-inline: auto;
-  padding: var(--space-5) var(--space-4) var(--space-12);
+  padding: var(--space-6) var(--space-4) var(--space-12);
 }
 
 @media (min-width: 768px) {
   .body {
-    padding: var(--space-8) var(--space-6);
+    padding: var(--space-8) var(--space-6) var(--space-16);
   }
 }
-

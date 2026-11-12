@@ -1,8 +1,52 @@
+/* ==========================================================================
+   Global Base & Typography Smoothing
+   ========================================================================== */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  scroll-behavior: smooth;
+  font-family: var(--font-sans);
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  background-color: var(--bg-canvas);
+  min-height: 100vh;
+}
+
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Accessible & Crisp Focus Rings */
 :focus-visible {
   outline: 2px solid var(--brand-primary);
   outline-offset: 2px;
 }
 
+/* Typography Utilities */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
@@ -29,7 +73,7 @@
   max-width: 65ch;
 }
 
-/* Mencegah auto-zoom browser mobile ketika mengetik di field formulir */
+/* Mobile Friendly Form Typography */
 @media (max-width: 767px) {
   input,
   select,
@@ -38,6 +82,7 @@
   }
 }
 
+/* Respect User Motion Preferences */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -49,6 +94,7 @@
   }
 }
 
+/* Print Styles */
 .print-only-root {
   display: none;
 }
@@ -80,4 +126,3 @@
     color: #111827 !important;
   }
 }
-
