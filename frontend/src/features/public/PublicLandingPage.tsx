@@ -1,31 +1,37 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  ArrowRight,
   Award,
   BookOpen,
   Building2,
   Calendar,
+  Check,
   CheckCircle2,
   Clock,
+  Compass,
+  CreditCard,
   FileCheck,
+  FileText,
   MapPin,
   MessageCircle,
   Search,
   ShieldCheck,
   Sparkles,
+  UploadCloud,
+  UserCheck,
   Users,
 } from 'lucide-react';
 import { ApiError, apiRequest, formatRupiah } from '@/core/api/client';
 import { useTerminology } from '@/core/terminology/terminology';
 import type { PublicCheckStatusResult, PublicPortalPayload } from '@/core/types/domain';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { InputField } from '@/components/ui/InputField';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import styles from './PublicLandingPage.module.css';
 
 function formatCloseDate(iso?: string): string {
-  if (!iso) return 'Menyesuaikan jadwal resmi';
+  if (!iso) return 'Menyesuaikan jadwal resmi panitia';
   const dt = new Date(iso);
   if (Number.isNaN(dt.getTime())) return iso;
   return new Intl.DateTimeFormat('id-ID', {
@@ -87,6 +93,10 @@ export function PublicLandingPage({
   }, [activePeriod?.closes_at]);
 
   const totalCapacity = (activePeriod?.tracks ?? []).reduce((acc, t) => acc + (t.quota || 0), 0);
+  const totalRegistered = (activePeriod?.tracks ?? []).reduce(
+    (acc, t) => acc + (t.active_applicant_count || 0),
+    0,
+  );
 
   async function handleCheckStatus(e: FormEvent) {
     e.preventDefault();
@@ -125,245 +135,465 @@ export function PublicLandingPage({
   )}`;
 
   return (
-    <div>
-      {/* HERO SECTION */}
+    <div className={styles.landingWrapper}>
+      {/* =========================================================================
+          HERO SECTION
+          ========================================================================= */}
       <section className={styles.hero}>
         <div className={`container-public ${styles.heroGrid}`}>
-          <div>
-            <div className={styles.pill}>
-              <CheckCircle2 size={14} />
+          {/* Left Column: Headlines & Actions */}
+          <div className={styles.heroLeft}>
+            <div className={styles.heroBadge}>
+              <span className={styles.pulseDotWrapper}>
+                <span className={styles.pulseDotPing} />
+                <span className={styles.pulseDotCore} />
+              </span>
               <span>
-                {term.programAcronym} {activePeriod?.academic_year} · {activePeriod?.name} Dibuka
+                {term.programAcronym} T.A. {activePeriod?.academic_year || '2026/2027'} · {activePeriod?.name || 'Gelombang 1'} Dibuka
               </span>
             </div>
-            <h1 className={styles.heroTitle}>{portal.tenant.name}</h1>
-            <p className={`${styles.heroSub} prose-limit`}>
+
+            <h1 className={styles.heroTitle}>
+              Pondok Pesantren <br />
+              <span className={styles.heroTitleGradient}>
+                {portal.tenant.name.replace(/Pondok Pesantren\s*/i, '') || 'Al-Hamid Cinta Mulya'}
+              </span>
+            </h1>
+
+            <p className={styles.heroSub}>
               {portal.tenant.theme_config.tagline ||
                 'Pendidikan Islam Berkarakter, Unggul dalam Ilmu & Akhlakul Karimah'}
-              . Pendaftaran {term.applicantNoun} dilakukan secara daring terpadu dengan pemantauan
-              status real-time oleh {term.guardianNoun}.
+              . Portal pendaftaran daring terpadu untuk calon {term.applicantNoun}. Pantau proses seleksi, pembayaran multi-bank, hingga cetak SK kelulusan resmi dalam satu tempat.
             </p>
+
             <div className={styles.heroActions}>
               <Link to="/app/daftar">
-                <Button size="lg">Daftar {term.applicantNoun}</Button>
+                <Button size="lg" className={styles.primaryCtaBtn}>
+                  <span>Daftar {term.applicantNoun} Sekarang</span>
+                  <ArrowRight size={18} />
+                </Button>
               </Link>
               <Link to="/app">
-                <Button variant="secondary" size="lg">
+                <Button variant="secondary" size="lg" className={styles.secondaryCtaBtn}>
                   Masuk Portal {term.guardianNoun}
                 </Button>
               </Link>
             </div>
 
-            {/* STATS RIBBON */}
+            <div className={styles.heroTrustBadges}>
+              <div className={styles.trustItem}>
+                <CheckCircle2 size={16} className={styles.trustIcon} />
+                <span>Terakreditasi Kemenag RI</span>
+              </div>
+              <div className={styles.trustItem}>
+                <CheckCircle2 size={16} className={styles.trustIcon} />
+                <span>100% Berasrama Penuh</span>
+              </div>
+              <div className={styles.trustItem}>
+                <CheckCircle2 size={16} className={styles.trustIcon} />
+                <span>Beasiswa Tahfidz Al-Qur'an</span>
+              </div>
+            </div>
+
+            {/* Quick Stats Grid */}
             <div className={styles.statsRibbon}>
-              <div className={styles.statItem}>
-                <span className={styles.statNumber}>{portal.units.length} Unit</span>
-                <span className={styles.statLabel}>Jenjang Pendidikan</span>
+              <div className={styles.statCard}>
+                <div className={styles.statIconWrap}>
+                  <Building2 size={20} />
+                </div>
+                <div>
+                  <span className={styles.statNumber}>{portal.units.length} Unit</span>
+                  <span className={styles.statLabel}>Jenjang Pendidikan</span>
+                </div>
               </div>
-              <div className={styles.statItem}>
-                <span className={styles.statNumber}>{totalCapacity} Kuota</span>
-                <span className={styles.statLabel}>Total Daya Tampung</span>
+              <div className={styles.statCard}>
+                <div className={styles.statIconWrap}>
+                  <Users size={20} />
+                </div>
+                <div>
+                  <span className={styles.statNumber}>{totalCapacity} Kuota</span>
+                  <span className={styles.statLabel}>Daya Tampung Total</span>
+                </div>
               </div>
-              <div className={styles.statItem}>
-                <span className={styles.statNumber}>{activePeriod?.tracks.length ?? 0} Jalur</span>
-                <span className={styles.statLabel}>Pendaftaran Aktif</span>
+              <div className={styles.statCard}>
+                <div className={styles.statIconWrap}>
+                  <Award size={20} />
+                </div>
+                <div>
+                  <span className={styles.statNumber}>{activePeriod?.tracks.length ?? 0} Jalur</span>
+                  <span className={styles.statLabel}>Pendaftaran Aktif</span>
+                </div>
               </div>
-              <div className={styles.statItem}>
-                <span className={styles.statNumber}>Terakreditasi</span>
-                <span className={styles.statLabel}>Berasrama Penuh</span>
+              <div className={styles.statCard}>
+                <div className={styles.statIconWrap}>
+                  <ShieldCheck size={20} />
+                </div>
+                <div>
+                  <span className={styles.statNumber}>24 Jam</span>
+                  <span className={styles.statLabel}>Bimbingan Asatidz</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* COUNTDOWN & LOCATION CARD */}
-          <div className={styles.countdownCard}>
-            <div className={styles.countdownHeader}>
-              <Clock size={18} style={{ color: 'var(--brand-primary)' }} />
-              <span>Hitung Mundur Penutupan Pendaftaran</span>
-            </div>
+          {/* Right Column: Registration Hub Card */}
+          <div className={styles.heroRight}>
+            <div className={styles.hubCard}>
+              <div className={styles.hubHeader}>
+                <div className={styles.hubStatusLive}>
+                  <span className={styles.liveIndicatorDot} />
+                  <span>Pendaftaran Sedang Berlangsung</span>
+                </div>
+                <div className={styles.hubWaveTag}>
+                  {activePeriod?.name || 'Gelombang 1'}
+                </div>
+              </div>
 
-            <div className={styles.countdownGrid}>
-              <div className={styles.countdownBlock}>
-                <div className={`${styles.countdownNumber} tabular-nums`}>
-                  {String(remaining.days).padStart(2, '0')}
+              <div className={styles.countdownSection}>
+                <div className={styles.countdownTitle}>
+                  <Clock size={16} />
+                  <span>Sisa Waktu Penutupan Gelombang:</span>
                 </div>
-                <div className={styles.countdownLabel}>Hari</div>
-              </div>
-              <div className={styles.countdownBlock}>
-                <div className={`${styles.countdownNumber} tabular-nums`}>
-                  {String(remaining.hours).padStart(2, '0')}
+                <div className={styles.countdownGrid}>
+                  <div className={styles.countdownBlock}>
+                    <div className={styles.countdownNumber}>
+                      {String(remaining.days).padStart(2, '0')}
+                    </div>
+                    <div className={styles.countdownLabel}>Hari</div>
+                  </div>
+                  <div className={styles.countdownBlock}>
+                    <div className={styles.countdownNumber}>
+                      {String(remaining.hours).padStart(2, '0')}
+                    </div>
+                    <div className={styles.countdownLabel}>Jam</div>
+                  </div>
+                  <div className={styles.countdownBlock}>
+                    <div className={styles.countdownNumber}>
+                      {String(remaining.minutes).padStart(2, '0')}
+                    </div>
+                    <div className={styles.countdownLabel}>Menit</div>
+                  </div>
+                  <div className={styles.countdownBlock}>
+                    <div className={styles.countdownNumber}>
+                      {String(remaining.seconds).padStart(2, '0')}
+                    </div>
+                    <div className={styles.countdownLabel}>Detik</div>
+                  </div>
                 </div>
-                <div className={styles.countdownLabel}>Jam</div>
               </div>
-              <div className={styles.countdownBlock}>
-                <div className={`${styles.countdownNumber} tabular-nums`}>
-                  {String(remaining.minutes).padStart(2, '0')}
-                </div>
-                <div className={styles.countdownLabel}>Menit</div>
-              </div>
-              <div className={styles.countdownBlock}>
-                <div className={`${styles.countdownNumber} tabular-nums`}>
-                  {String(remaining.seconds).padStart(2, '0')}
-                </div>
-                <div className={styles.countdownLabel}>Detik</div>
-              </div>
-            </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', paddingTop: 'var(--space-2)', borderTop: '1px solid var(--border-default)' }}>
-              <div style={{ display: 'flex', gap: 'var(--space-2)', color: 'var(--text-secondary)', fontSize: 'var(--text-caption)' }}>
-                <Calendar size={16} style={{ flexShrink: 0, marginTop: 2, color: 'var(--brand-primary)' }} />
-                <span>
-                  Batas Akhir: <strong className="tabular-nums">{formatCloseDate(activePeriod?.closes_at)}</strong>
-                </span>
+              {/* Quota Progress */}
+              <div className={styles.hubQuotaBox}>
+                <div className={styles.hubQuotaHeader}>
+                  <span>Keterisian Kuota</span>
+                  <strong className="tabular-nums">
+                    {totalRegistered} dari {totalCapacity} Santri
+                  </strong>
+                </div>
+                <div className={styles.hubProgressBar}>
+                  <div
+                    className={styles.hubProgressFill}
+                    style={{
+                      width: `${Math.min(100, Math.round((totalRegistered / Math.max(1, totalCapacity)) * 100))}%`,
+                    }}
+                  />
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: 'var(--space-2)', color: 'var(--text-secondary)', fontSize: 'var(--text-caption)' }}>
-                <MapPin size={16} style={{ flexShrink: 0, marginTop: 2, color: 'var(--brand-primary)' }} />
-                <span>{portal.units[0]?.address || 'Pondok Pesantren Al-Hamid, Way Kanan, Lampung'}</span>
+
+              {/* Meta Info */}
+              <div className={styles.hubMetaList}>
+                <div className={styles.hubMetaItem}>
+                  <Calendar size={16} className={styles.hubMetaIcon} />
+                  <span>
+                    Batas Akhir: <strong>{formatCloseDate(activePeriod?.closes_at)}</strong>
+                  </span>
+                </div>
+                <div className={styles.hubMetaItem}>
+                  <MapPin size={16} className={styles.hubMetaIcon} />
+                  <span>{portal.units[0]?.address || 'Kampus Al-Hamid, Way Pengubuan, Lampung'}</span>
+                </div>
+              </div>
+
+              <div className={styles.hubActionArea}>
+                <Link to="/app/daftar">
+                  <Button fullWidth size="lg">
+                    <span>Mulai Pendaftaran Online</span>
+                    <ArrowRight size={16} />
+                  </Button>
+                </Link>
+                <div className={styles.hubGuaranteeText}>
+                  Proses cepat ± 10 menit · Siapkan NIK &amp; Kartu Keluarga
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 7-STEP ADMISSION FLOW TIMELINE */}
+      {/* =========================================================================
+          PILLARS / VALUE PROPOSITION RIBBON
+          ========================================================================= */}
+      <section className={styles.pillarsRibbon}>
+        <div className={`container-public ${styles.pillarsGrid}`}>
+          <div className={styles.pillarCard}>
+            <div className={styles.pillarIcon}>
+              <BookOpen size={22} />
+            </div>
+            <div>
+              <h3 className={styles.pillarTitle}>Kurikulum Terintegrasi</h3>
+              <p className={styles.pillarDesc}>
+                Memadukan kajian kitab kuning salafiyah klasik dengan pendidikan kurikulum nasional berakreditasi.
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.pillarCard}>
+            <div className={styles.pillarIcon}>
+              <Sparkles size={22} />
+            </div>
+            <div>
+              <h3 className={styles.pillarTitle}>Tahfidzul Qur'an Bersanad</h3>
+              <p className={styles.pillarDesc}>
+                Program intensif hafalan Al-Qur'an 30 Juz mutqin dengan bimbingan asatidz muhaffidz berpengalaman.
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.pillarCard}>
+            <div className={styles.pillarIcon}>
+              <ShieldCheck size={22} />
+            </div>
+            <div>
+              <h3 className={styles.pillarTitle}>Karakter &amp; Kemandirian</h3>
+              <p className={styles.pillarDesc}>
+                Kompleks asrama representatif dengan pembinaan akhlak mulia dan pengawasan 24 jam penuh.
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.pillarCard}>
+            <div className={styles.pillarIcon}>
+              <CreditCard size={22} />
+            </div>
+            <div>
+              <h3 className={styles.pillarTitle}>Pembayaran Transparan</h3>
+              <p className={styles.pillarDesc}>
+                Konfirmasi instan otomatis via QRIS dan Virtual Account seluruh bank nasional serta transfer manual.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          7-STEP ADMISSION FLOW TIMELINE
+          ========================================================================= */}
       <section id="alur" className={`container-public ${styles.section}`}>
         <div className={styles.sectionHeader}>
           <span className={styles.sectionPill}>Panduan Registrasi</span>
           <h2 className={styles.sectionTitle}>Alur Pendaftaran 7 Langkah</h2>
           <p className={styles.sectionSub}>
-            Proses seleksi penerimaan santri baru berlangsung transparan, mandiri, dan dapat dipantau langsung kapan saja.
+            Proses seleksi penerimaan santri baru berlangsung transparan, mandiri, dan dapat dipantau langsung setiap saat.
           </p>
         </div>
 
         <div className={styles.timelineGrid}>
           <div className={styles.stepCard}>
-            <div className={styles.stepBadge}>1</div>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepBadge}>01</div>
+              <UserCheck size={20} className={styles.stepIcon} />
+            </div>
             <h3 className={styles.stepTitle}>Buat Akun Wali</h3>
             <p className={styles.stepDesc}>
-              Daftar akun menggunakan nomor WhatsApp dan kata sandi untuk mengelola pendaftaran calon santri secara terpusat.
+              Daftar menggunakan nomor WhatsApp aktif untuk mengelola pendaftaran calon santri secara terpusat.
             </p>
           </div>
+
           <div className={styles.stepCard}>
-            <div className={styles.stepBadge}>2</div>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepBadge}>02</div>
+              <Compass size={20} className={styles.stepIcon} />
+            </div>
             <h3 className={styles.stepTitle}>Pilih Jalur &amp; Jenjang</h3>
             <p className={styles.stepDesc}>
-              Pilih unit pendidikan tujuan serta jalur seleksi (Reguler, Prestasi, atau Tahfidz Al-Qur'an).
+              Tentukan unit pendidikan tujuan serta jalur masuk yang sesuai (Reguler, Prestasi, atau Beasiswa Tahfidz).
             </p>
           </div>
+
           <div className={styles.stepCard}>
-            <div className={styles.stepBadge}>3</div>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepBadge}>03</div>
+              <FileText size={20} className={styles.stepIcon} />
+            </div>
             <h3 className={styles.stepTitle}>Pengisian Biodata</h3>
             <p className={styles.stepDesc}>
-              Lengkapi data kependudukan (NIK, NISN, Kartu Keluarga), data orang tua/wali, serta riwayat pendidikan formal.
+              Lengkapi identitas calon santri (NIK, NISN, KK), riwayat kesehatan, dan data orang tua/wali secara lengkap.
             </p>
           </div>
+
           <div className={styles.stepCard}>
-            <div className={styles.stepBadge}>4</div>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepBadge}>04</div>
+              <UploadCloud size={20} className={styles.stepIcon} />
+            </div>
             <h3 className={styles.stepTitle}>Unggah Berkas</h3>
             <p className={styles.stepDesc}>
-              Unggah foto dokumen resmi (Kartu Keluarga, Akta Kelahiran, Pas Foto formal, dan Surat Keterangan Lulus/Rapor).
+              Unggah foto digital dokumen resmi: Kartu Keluarga, Akta Kelahiran, Pas Foto, dan SKL/Rapor sekolah asal.
             </p>
           </div>
+
           <div className={styles.stepCard}>
-            <div className={styles.stepBadge}>5</div>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepBadge}>05</div>
+              <CreditCard size={20} className={styles.stepIcon} />
+            </div>
             <h3 className={styles.stepTitle}>Pembayaran Biaya</h3>
             <p className={styles.stepDesc}>
-              Selesaikan biaya pendaftaran melalui QRIS instan, Virtual Account semua bank nasional, atau transfer manual.
+              Selesaikan biaya pendaftaran via QRIS instan, Virtual Account semua bank nasional, atau transfer manual.
             </p>
           </div>
+
           <div className={styles.stepCard}>
-            <div className={styles.stepBadge}>6</div>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepBadge}>06</div>
+              <CheckCircle2 size={20} className={styles.stepIcon} />
+            </div>
             <h3 className={styles.stepTitle}>Verifikasi &amp; Seleksi</h3>
             <p className={styles.stepDesc}>
-              Panitia memvalidasi berkas dan calon santri mengikuti jadwal tes seleksi (baca kitab, tahsin, atau tes potensi).
+              Panitia memvalidasi berkas, dan calon santri mengikuti jadwal tes seleksi (baca Al-Qur'an &amp; wawancara).
             </p>
           </div>
+
           <div className={styles.stepCard}>
-            <div className={styles.stepBadge}>7</div>
-            <h3 className={styles.stepTitle}>SK Kelulusan &amp; Daftar Ulang</h3>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepBadge}>07</div>
+              <Award size={20} className={styles.stepIcon} />
+            </div>
+            <h3 className={styles.stepTitle}>Kelulusan &amp; Cetak SKL</h3>
             <p className={styles.stepDesc}>
-              Cek pengumuman resmi kelulusan, cetak Surat Keterangan Lulus (SKL) berstempel digital, dan konfirmasi daftar ulang.
+              Pantau pengumuman kelulusan resmi, cetak Surat Keputusan bertanda tangan digital, dan selesaikan daftar ulang.
             </p>
           </div>
         </div>
       </section>
 
-      {/* FASILITAS & KEUNGGULAN LEMBAGA */}
+      {/* =========================================================================
+          FASILITAS & KEUNGGULAN LEMBAGA
+          ========================================================================= */}
       <section id="fasilitas" className={`${styles.section} ${styles.sectionAlt}`}>
-        <div className={`container-public`}>
+        <div className="container-public">
           <div className={styles.sectionHeader}>
             <span className={styles.sectionPill}>Keunggulan Lembaga</span>
             <h2 className={styles.sectionTitle}>Fasilitas &amp; Lingkungan Belajar</h2>
             <p className={styles.sectionSub}>
-              Sarana dan prasarana terpadu untuk membentuk santri yang beriman kokoh, berwawasan luas, dan mandiri.
+              Sarana dan prasarana terpadu untuk membentuk santri yang beriman kokoh, berwawasan luas, mandiri, dan berakhlakul karimah.
             </p>
           </div>
 
           <div className={styles.facilityGrid}>
             <div className={styles.facilityCard}>
-              <div className={styles.facilityIcon}>
-                <Building2 size={24} />
+              <div className={styles.facilityCardTop}>
+                <div className={styles.facilityIcon}>
+                  <Building2 size={24} />
+                </div>
+                <span className={styles.facilityTag}>Keasramaan</span>
               </div>
-              <h3 style={{ fontSize: 'var(--text-h3)', fontWeight: 700 }}>Asrama Representatif &amp; Terpisah</h3>
-              <p style={{ fontSize: 'var(--text-caption)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                Kompleks asrama putra dan putri yang bersih, aman, dan dibimbing oleh dewan asatidz pembina selama 24 jam penuh.
+              <h3 className={styles.facilityTitle}>Asrama Representatif &amp; Terpisah</h3>
+              <p className={styles.facilityDesc}>
+                Kompleks asrama putra dan putri yang bersih, higienis, dan dibimbing oleh dewan asatidz pembina asrama selama 24 jam penuh.
               </p>
             </div>
 
             <div className={styles.facilityCard}>
-              <div className={styles.facilityIcon}>
-                <Sparkles size={24} />
+              <div className={styles.facilityCardTop}>
+                <div className={styles.facilityIcon}>
+                  <Sparkles size={24} />
+                </div>
+                <span className={styles.facilityTag}>Ubudiyah</span>
               </div>
-              <h3 style={{ fontSize: 'var(--text-h3)', fontWeight: 700 }}>Masjid Jami' Pusat Ubudiyah</h3>
-              <p style={{ fontSize: 'var(--text-caption)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                Pusat peribadatan shalat berjamaah 5 waktu, kajian halaqah kitab kuning, serta setoran hafalan Al-Qur'an.
+              <h3 className={styles.facilityTitle}>Masjid Jami' Pusat Peribadatan</h3>
+              <p className={styles.facilityDesc}>
+                Pusat kegiatan shalat berjamaah 5 waktu, kajian halaqah kitab kuning ba'da Shubuh &amp; Maghrib, serta setoran tahfidz.
               </p>
             </div>
 
             <div className={styles.facilityCard}>
-              <div className={styles.facilityIcon}>
-                <BookOpen size={24} />
+              <div className={styles.facilityCardTop}>
+                <div className={styles.facilityIcon}>
+                  <BookOpen size={24} />
+                </div>
+                <span className={styles.facilityTag}>Literasi Salaf</span>
               </div>
-              <h3 style={{ fontSize: 'var(--text-h3)', fontWeight: 700 }}>Maktabah Kitab &amp; Perpustakaan</h3>
-              <p style={{ fontSize: 'var(--text-caption)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                Koleksi referensi ribuan jilid kitab turats klasik pesantren dipadukan dengan literatur ilmu pengetahuan modern.
+              <h3 className={styles.facilityTitle}>Maktabah Kitab &amp; Perpustakaan</h3>
+              <p className={styles.facilityDesc}>
+                Koleksi ribuan jilid kitab turats klasik pesantren dipadukan dengan buku teks sains modern dan ruang baca nyaman.
               </p>
             </div>
 
             <div className={styles.facilityCard}>
-              <div className={styles.facilityIcon}>
-                <ShieldCheck size={24} />
+              <div className={styles.facilityCardTop}>
+                <div className={styles.facilityIcon}>
+                  <ShieldCheck size={24} />
+                </div>
+                <span className={styles.facilityTag}>Teknologi &amp; Sains</span>
               </div>
-              <h3 style={{ fontSize: 'var(--text-h3)', fontWeight: 700 }}>Lab Komputer &amp; Riset Sains</h3>
-              <p style={{ fontSize: 'var(--text-caption)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                Fasilitas pembelajaran teknologi informasi, multimedia digital, dan eksperimen sains dasar penunjang akademik.
+              <h3 className={styles.facilityTitle}>Lab Komputer &amp; Riset Sains</h3>
+              <p className={styles.facilityDesc}>
+                Fasilitas pembelajaran teknologi informasi, multimedia digital, CBT ujian, dan laboratorium sains penunjang akademik.
               </p>
             </div>
 
             <div className={styles.facilityCard}>
-              <div className={styles.facilityIcon}>
-                <Users size={24} />
+              <div className={styles.facilityCardTop}>
+                <div className={styles.facilityIcon}>
+                  <Users size={24} />
+                </div>
+                <span className={styles.facilityTag}>Karakter</span>
               </div>
-              <h3 style={{ fontSize: 'var(--text-h3)', fontWeight: 700 }}>Pengembangan Bakat &amp; Olahraga</h3>
-              <p style={{ fontSize: 'var(--text-caption)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                Lapangan olahraga, seni hadrah, pencak silat Pagar Nusa, pramuka, dan pembinaan kepemimpinan santri (OSIS/IPNU).
+              <h3 className={styles.facilityTitle}>Pengembangan Bakat &amp; Seni</h3>
+              <p className={styles.facilityDesc}>
+                Lapangan olahraga multifungsi, seni hadrah &amp; shalawat, pencak silat Pagar Nusa, pramuka, dan organisasi santri (OSIS/IPNU).
               </p>
             </div>
 
             <div className={styles.facilityCard}>
-              <div className={styles.facilityIcon}>
-                <Award size={24} />
+              <div className={styles.facilityCardTop}>
+                <div className={styles.facilityIcon}>
+                  <Award size={24} />
+                </div>
+                <span className={styles.facilityTag}>Kesehatan</span>
               </div>
-              <h3 style={{ fontSize: 'var(--text-h3)', fontWeight: 700 }}>Pos Kesehatan Pesantren (Poskestren)</h3>
-              <p style={{ fontSize: 'var(--text-caption)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                Layanan medis pertolongan pertama, pemantauan gizi santri, kerja sama rujukan puskesmas, dan dokter jaga berkala.
+              <h3 className={styles.facilityTitle}>Pos Kesehatan Pesantren (Poskestren)</h3>
+              <p className={styles.facilityDesc}>
+                Layanan medis pertolongan pertama, pemantauan gizi &amp; higienitas makanan, kerja sama rujukan puskesmas, dan tenaga medis siaga.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* JALUR & TRANSPARANSI BIAYA */}
+      {/* =========================================================================
+          ISLAMIC WISDOM BANNER / PESANTREN QUOTE
+          ========================================================================= */}
+      <section className={styles.quoteSection}>
+        <div className="container-public">
+          <div className={styles.quoteCard}>
+            <div className={styles.quoteArabic} dir="rtl">
+              مَنْ يُرِدِ اللَّهُ بِهِ خَيْرًا يُفَقِّهْهُ فِي الدِّينِ
+            </div>
+            <blockquote className={styles.quoteText}>
+              "Barangsiapa yang Allah kehendaki kebaikan baginya, niscaya Allah pahamkan ia secara mendalam dalam urusan agamanya."
+            </blockquote>
+            <div className={styles.quoteAuthor}>
+              — Komitmen Pengasuh Pondok Pesantren Al-Hamid Cinta Mulya dalam Membina Generasi Qur'ani yang Beradab &amp; Mandiri
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          JALUR & TRANSPARANSI BIAYA (TIER CARDS)
+          ========================================================================= */}
       <section id="jalur" className={`container-public ${styles.section}`}>
         <div className={styles.sectionHeader}>
           <span className={styles.sectionPill}>Pilihan Penerimaan</span>
@@ -371,41 +601,64 @@ export function PublicLandingPage({
             {term.trackNoun} &amp; Transparansi Biaya
           </h2>
           <p className={styles.sectionSub}>
-            Tahun Ajaran {activePeriod?.academic_year} · Periode {activePeriod?.name}. Biaya pendaftaran jelas tanpa pungutan tersembunyi.
+            Tahun Ajaran {activePeriod?.academic_year} · Periode {activePeriod?.name}. Rincian biaya transparan dan terverifikasi tanpa biaya tersembunyi.
           </p>
         </div>
 
-        <div className="grid-auto-cards grid-auto-cards-3">
+        <div className={styles.tracksGrid}>
           {activePeriod?.tracks.map((track) => {
             const pct = Math.min(
               100,
               Math.round((track.active_applicant_count / Math.max(1, track.quota)) * 100),
             );
             return (
-              <Card key={track.id} interactive className={styles.trackCard}>
-                <div>
-                  <h3 className={styles.trackTitle}>{track.display_name}</h3>
-                  <p className={styles.trackDesc}>{track.description}</p>
-                  <div className={styles.trackTags}>
-                    <span className={`${styles.tag} tabular-nums`}>
-                      Biaya Formulir: {formatRupiah(track.registration_fee_idr)}
-                    </span>
-                    {track.requires_coordinates && <span className={styles.tag}>Wajib Titik Peta</span>}
-                    {track.requires_achievements && <span className={styles.tag}>Wajib Piagam Prestasi</span>}
+              <div key={track.id} className={styles.trackCardEnhanced}>
+                <div className={styles.trackCardTop}>
+                  <div className={styles.trackBadge}>Jalur Pilihan Utama</div>
+                  <h3 className={styles.trackName}>{track.display_name}</h3>
+                  <p className={styles.trackDescription}>{track.description}</p>
+                </div>
+
+                <div className={styles.trackPricingBlock}>
+                  <div className={styles.trackFeeLabel}>Biaya Formulir Pendaftaran</div>
+                  <div className={styles.trackFeeAmount}>
+                    {formatRupiah(track.registration_fee_idr)}
+                    <span className={styles.trackFeePer}> / calon santri</span>
                   </div>
                 </div>
 
-                <div>
-                  <div className={`${styles.quotaMeta} tabular-nums`}>
-                    <span>Terisi {track.active_applicant_count} santri</span>
-                    <span>Daya tampung {track.quota}</span>
+                <div className={styles.trackFeaturesList}>
+                  <div className={styles.trackFeatureItem}>
+                    <Check size={16} className={styles.checkIcon} />
+                    <span>Daya tampung: <strong>{track.quota} Santri</strong></span>
                   </div>
-                  <div className={styles.progressTrack} aria-hidden="true">
-                    <div className={styles.progressFill} style={{ width: `${pct}%` }} />
+                  <div className={styles.trackFeatureItem}>
+                    <Check size={16} className={styles.checkIcon} />
+                    <span>Ujian Seleksi Potensi &amp; Baca Al-Qur'an</span>
                   </div>
+                  <div className={styles.trackFeatureItem}>
+                    <Check size={16} className={styles.checkIcon} />
+                    <span>Verifikasi Berkas Daring Tanpa Antri</span>
+                  </div>
+                  <div className={styles.trackFeatureItem}>
+                    <Check size={16} className={styles.checkIcon} />
+                    <span>Notifikasi Real-time WhatsApp Panitia</span>
+                  </div>
+                </div>
 
-                  <div className={styles.paymentBadgesRow}>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Metode:</span>
+                <div className={styles.trackQuotaSection}>
+                  <div className={styles.trackQuotaMeta}>
+                    <span>Terisi: {track.active_applicant_count} santri</span>
+                    <span>Sisa: {Math.max(0, track.quota - track.active_applicant_count)} kuota</span>
+                  </div>
+                  <div className={styles.trackProgressBar}>
+                    <div className={styles.trackProgressFill} style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+
+                <div className={styles.trackPaymentMethods}>
+                  <span className={styles.paymentMethodLabel}>Metode Resmi:</span>
+                  <div className={styles.paymentPillsWrap}>
                     <span className={styles.payPill}>QRIS</span>
                     <span className={styles.payPill}>BSI VA</span>
                     <span className={styles.payPill}>Mandiri</span>
@@ -413,79 +666,106 @@ export function PublicLandingPage({
                     <span className={styles.payPill}>BCA</span>
                     <span className={styles.payPill}>Manual</span>
                   </div>
-
-                  <div style={{ marginTop: 'var(--space-3)' }}>
-                    <Link to={`/app/daftar?track=${track.id}`}>
-                      <Button variant="secondary" size="sm" fullWidth>
-                        Daftar Jalur Ini
-                      </Button>
-                    </Link>
-                  </div>
                 </div>
-              </Card>
+
+                <div className={styles.trackActionArea}>
+                  <Link to={`/app/daftar?track=${track.id}`}>
+                    <Button fullWidth size="lg">
+                      <span>Pilih Jalur &amp; Mulai Daftar</span>
+                      <ArrowRight size={16} />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
             );
           })}
         </div>
       </section>
 
-      {/* CHECKLIST PERSYARATAN BERKAS */}
+      {/* =========================================================================
+          CHECKLIST PERSYARATAN BERKAS
+          ========================================================================= */}
       <section id="syarat" className={`${styles.section} ${styles.sectionAlt}`}>
-        <div className={`container-public`}>
+        <div className="container-public">
           <div className={styles.sectionHeader}>
             <span className={styles.sectionPill}>Kelengkapan Dokumen</span>
             <h2 className={styles.sectionTitle}>Persyaratan Berkas Pendaftaran</h2>
             <p className={styles.sectionSub}>
-              Pastikan seluruh berkas telah disiapkan dalam bentuk file digital (foto/scan jelas format PDF, JPG, atau PNG).
+              Pastikan berkas telah disiapkan dalam bentuk file digital yang jelas (format PDF, JPG, atau PNG maksimal 2MB per dokumen).
             </p>
           </div>
 
           <div className={styles.reqCard}>
             <div className={styles.reqList}>
               <div className={styles.reqItem}>
-                <FileCheck size={20} style={{ color: 'var(--brand-primary)', flexShrink: 0, marginTop: 2 }} />
+                <div className={styles.reqIconWrap}>
+                  <FileCheck size={22} />
+                </div>
                 <div>
                   <div className={styles.reqItemTitle}>Kartu Keluarga (KK)</div>
-                  <div className={styles.reqItemSub}>Scan Kartu Keluarga terbaru yang mencantumkan nama calon santri &amp; orang tua.</div>
+                  <div className={styles.reqItemSub}>
+                    Foto/scan Kartu Keluarga terbaru yang memuat nama calon santri &amp; orang tua secara jelas.
+                  </div>
                 </div>
               </div>
 
               <div className={styles.reqItem}>
-                <FileCheck size={20} style={{ color: 'var(--brand-primary)', flexShrink: 0, marginTop: 2 }} />
+                <div className={styles.reqIconWrap}>
+                  <FileCheck size={22} />
+                </div>
                 <div>
                   <div className={styles.reqItemTitle}>Akta Kelahiran</div>
-                  <div className={styles.reqItemSub}>Scan Akta Kelahiran resmi dari Dinas Kependudukan dan Pencatatan Sipil.</div>
+                  <div className={styles.reqItemSub}>
+                    Foto/scan Akta Kelahiran resmi dari Dinas Kependudukan dan Pencatatan Sipil.
+                  </div>
                 </div>
               </div>
 
               <div className={styles.reqItem}>
-                <FileCheck size={20} style={{ color: 'var(--brand-primary)', flexShrink: 0, marginTop: 2 }} />
+                <div className={styles.reqIconWrap}>
+                  <FileCheck size={22} />
+                </div>
                 <div>
                   <div className={styles.reqItemTitle}>Pas Foto Formal Berwarna</div>
-                  <div className={styles.reqItemSub}>Ukuran 3x4 dengan latar belakang merah atau biru, berpakaian rapi dan sopan.</div>
+                  <div className={styles.reqItemSub}>
+                    Ukuran 3x4 berlatar belakang merah atau biru, berpakaian kemeja/busana muslim sopan dan rapi.
+                  </div>
                 </div>
               </div>
 
               <div className={styles.reqItem}>
-                <FileCheck size={20} style={{ color: 'var(--brand-primary)', flexShrink: 0, marginTop: 2 }} />
+                <div className={styles.reqIconWrap}>
+                  <FileCheck size={22} />
+                </div>
                 <div>
-                  <div className={styles.reqItemTitle}>Ijazah / SKL / Surat Keterangan Aktif</div>
-                  <div className={styles.reqItemSub}>Surat keterangan dari madrasah/sekolah asal jika ijazah resmi belum terbit.</div>
+                  <div className={styles.reqItemTitle}>Ijazah / SKL / Rapor Terakhir</div>
+                  <div className={styles.reqItemSub}>
+                    Surat Keterangan Lulus atau surat keterangan aktif dari kepala madrasah/sekolah asal jika ijazah belum terbit.
+                  </div>
                 </div>
               </div>
 
               <div className={styles.reqItem}>
-                <FileCheck size={20} style={{ color: 'var(--brand-primary)', flexShrink: 0, marginTop: 2 }} />
+                <div className={styles.reqIconWrap}>
+                  <FileCheck size={22} />
+                </div>
                 <div>
                   <div className={styles.reqItemTitle}>Surat Keterangan Sehat</div>
-                  <div className={styles.reqItemSub}>Surat dokter atau Puskesmas yang menyatakan santri sehat untuk belajar di asrama.</div>
+                  <div className={styles.reqItemSub}>
+                    Surat dari dokter atau Puskesmas yang menyatakan santri sehat jasmani untuk belajar di asrama.
+                  </div>
                 </div>
               </div>
 
               <div className={styles.reqItem}>
-                <FileCheck size={20} style={{ color: 'var(--brand-primary)', flexShrink: 0, marginTop: 2 }} />
+                <div className={styles.reqIconWrap}>
+                  <FileCheck size={22} />
+                </div>
                 <div>
                   <div className={styles.reqItemTitle}>Piagam Prestasi / Syahadah Tahfidz</div>
-                  <div className={styles.reqItemSub}>Khusus bagi pendaftar jalur Prestasi atau Beasiswa Tahfidz Al-Qur'an.</div>
+                  <div className={styles.reqItemSub}>
+                    Khusus bagi pendaftar Jalur Prestasi atau Beasiswa Tahfidz Al-Qur'an minimal 3 Juz mutqin.
+                  </div>
                 </div>
               </div>
             </div>
@@ -493,59 +773,75 @@ export function PublicLandingPage({
         </div>
       </section>
 
-      {/* FAST STATUS CHECK */}
+      {/* =========================================================================
+          FAST STATUS CHECK WIDGET
+          ========================================================================= */}
       <section id="cek-status" className={`container-public ${styles.section}`}>
-        <Card>
-          <div className={styles.sectionHeader} style={{ marginBottom: 'var(--space-4)', textAlign: 'left' }}>
+        <div className={styles.statusCardWrap}>
+          <div className={styles.statusCardHeader}>
             <span className={styles.sectionPill}>Layanan Mandiri</span>
-            <h2 className={styles.sectionTitle} style={{ fontSize: '1.4rem' }}>
+            <h2 className={styles.statusCardTitle}>
               Cek Status Pendaftaran Cepat
             </h2>
-            <p className={styles.sectionSub} style={{ fontSize: '0.875rem' }}>
-              Masukkan nomor pendaftaran untuk melihat progres berkas dan seleksi secara instan (data pribadi disamarkan sesuai UU PDP).
+            <p className={styles.statusCardSub}>
+              Pantau progres verifikasi berkas, jadwal tes, dan pengumuman seleksi secara instan. Data pribadi disamarkan sesuai UU Pelindungan Data Pribadi (UU PDP).
             </p>
           </div>
 
           <form onSubmit={handleCheckStatus} className={styles.statusForm}>
-            <InputField
-              label="Nomor Pendaftaran"
-              placeholder="Contoh: SPMB-2601-0001"
-              value={regNo}
-              onChange={(e) => setRegNo(e.target.value)}
-              error={statusError}
-              mono
-            />
-            <Button type="submit" disabled={checking}>
-              <Search size={16} />
-              {checking ? 'Memeriksa...' : 'Periksa Status'}
-            </Button>
+            <div style={{ flex: 1 }}>
+              <InputField
+                label="Nomor Pendaftaran Resmi"
+                placeholder="Contoh: SPMB-2601-0001"
+                value={regNo}
+                onChange={(e) => setRegNo(e.target.value)}
+                error={statusError}
+                mono
+              />
+            </div>
+            <div className={styles.statusSubmitWrap}>
+              <Button type="submit" size="lg" disabled={checking} fullWidth>
+                <Search size={18} />
+                <span>{checking ? 'Memeriksa Data...' : 'Periksa Status'}</span>
+              </Button>
+            </div>
           </form>
 
           {statusResult && (
-            <div className={styles.statusResult}>
-              <div>
-                <div className="mono-code" style={{ fontWeight: 700, fontSize: '0.95rem' }}>
-                  {statusResult.registration_no} · {statusResult.masked_name}
+            <div className={styles.statusResultCard}>
+              <div className={styles.statusResultLeft}>
+                <div className={styles.statusRegNo}>
+                  {statusResult.registration_no}
+                  <span className={styles.statusMaskedName}>· {statusResult.masked_name}</span>
                 </div>
-                <div style={{ fontSize: 'var(--text-caption)', color: 'var(--text-secondary)', marginTop: 4 }}>
+                <div className={styles.statusDetailMeta}>
                   Unit: <strong>{statusResult.unit_name}</strong> · Jalur: <strong>{statusResult.track_name}</strong>
                   {statusResult.rank_position ? ` · Peringkat #${statusResult.rank_position}` : ''}
                 </div>
               </div>
-              <StatusBadge status={statusResult.status} />
+              <div className={styles.statusResultRight}>
+                <StatusBadge status={statusResult.status} />
+                <Link to="/app">
+                  <Button variant="secondary" size="sm">
+                    Masuk Portal Wali
+                  </Button>
+                </Link>
+              </div>
             </div>
           )}
-        </Card>
+        </div>
       </section>
 
-      {/* FAQ SECTION */}
+      {/* =========================================================================
+          FAQ ACCORDION SECTION
+          ========================================================================= */}
       <section id="faq" className={`${styles.section} ${styles.sectionAlt}`}>
-        <div className={`container-public`}>
+        <div className="container-public">
           <div className={styles.sectionHeader}>
             <span className={styles.sectionPill}>Tanya Jawab</span>
             <h2 className={styles.sectionTitle}>Pertanyaan yang Sering Diajukan</h2>
             <p className={styles.sectionSub}>
-              Temukan jawaban cepat seputar tata cara pendaftaran, tes seleksi, dan biaya operasional pesantren.
+              Temukan jawaban cepat seputar mekanisme seleksi, syarat asrama, beasiswa tahfidz, dan biaya pendaftaran.
             </p>
           </div>
 
@@ -598,7 +894,9 @@ export function PublicLandingPage({
         </div>
       </section>
 
-      {/* FLOATING WHATSAPP HELPDESK BUTTON */}
+      {/* =========================================================================
+          FLOATING WHATSAPP HELPDESK BUTTON
+          ========================================================================= */}
       <a
         href={waHelpdeskUrl}
         target="_blank"
@@ -606,7 +904,7 @@ export function PublicLandingPage({
         className={styles.floatingWa}
         aria-label="Konsultasi Panitia PPDB via WhatsApp"
       >
-        <MessageCircle size={20} />
+        <MessageCircle size={22} />
         <span>Bantuan Panitia PPDB</span>
       </a>
     </div>

@@ -1,6 +1,6 @@
 .container-public {
   width: 100%;
-  max-width: 1120px;
+  max-width: 1200px;
   margin-inline: auto;
   padding-inline: var(--space-4);
 }
@@ -34,8 +34,11 @@
 }
 
 @media (min-width: 1024px) {
+  .container-public {
+    padding-inline: var(--space-8);
+  }
+
   .grid-auto-cards-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
-
