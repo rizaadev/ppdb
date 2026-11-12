@@ -155,54 +155,24 @@ func (s *PGStore) GetDashboardStats(ctx context.Context, tenantID uuid.UUID, uni
 			stats.TrackStats = append(stats.TrackStats, item)
 		}
 
-		// 5. Recent audit logs
-		auditRows, err := tx.Query(ctx, `
-			SELECT
-				l.id, l.application_id, COALESCE(a.registration_no, ''), COALESCE(a.student_name, ''),
-				a.unit_id, l.actor_user_id, COALESCE(u.full_name, ''), l.actor_role,
-				l.action_type, l.entity_type, l.entity_id, l.from_status, l.to_status,
-				l.reason, l.created_at
-			FROM status_audit_logs l
-			LEFT JOIN applications a ON a.id = l.application_id AND a.tenant_id = l.tenant_id
-			LEFT JOIN users u ON u.id = l.actor_user_id
-			WHERE l.tenant_id = $1 AND ($2::uuid IS NULL OR a.unit_id = $2)
-			ORDER BY l.created_at DESC
-			LIMIT 10;
-		`, tenantID, unitID)
-		if err != nil {
-			return err
-		}
-		defer auditRows.Close()
-
-		for auditRows.Next() {
-			var item TenantAuditLogItem
-			if err := auditRows.Scan(
-				&item.ID,
-				&item.ApplicationID,
-				&item.RegistrationNo,
-				&item.StudentName,
-				&item.UnitID,
-				&item.ActorUserID,
-				&item.ActorName,
-				&item.ActorRole,
-				&item.ActionType,
-				&item.EntityType,
-				&item.EntityID,
-				&item.FromStatus,
-				&item.ToStatus,
-				&item.Reason,
-				&item.CreatedAt,
-			); err != nil {
-				return err
-			}
-			stats.RecentActivities = append(stats.RecentActivities, item)
-		}
-
 		return nil
 	})
 
 	if err != nil {
 		return nil, err
 	}
+
+	// 5. Recent audit logs via tenant audit log service
+	filter := TenantAuditLogFilter{
+		Limit: 10,
+	}
+	if unitID != nil {
+		filter.AllowedUnitIDs = []uuid.UUID{*unitID}
+	}
+	recent, err := s.ListTenantAuditLogs(ctx, tenantID, filter)
+	if err == nil {
+		stats.RecentActivities = recent
+	}
+
 	return stats, nil
 }
