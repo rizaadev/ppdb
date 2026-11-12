@@ -132,5 +132,6 @@ type Store interface {
 	ListExportJobs(ctx context.Context, tenantID uuid.UUID, allowedUnitIDs []uuid.UUID, limit int) ([]ExportJob, error)
 	GetDemoExportFile(ctx context.Context, tenantID, jobID uuid.UUID) (*DemoExportFile, error)
 	ListTenantAuditLogs(ctx context.Context, tenantID uuid.UUID, filter TenantAuditLogFilter) ([]TenantAuditLogItem, error)
+	GetDashboardStats(ctx context.Context, tenantID uuid.UUID, unitID *uuid.UUID) (*DashboardStats, error)
 }
 

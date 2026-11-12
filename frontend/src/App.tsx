@@ -59,6 +59,11 @@ const VerificationWorkbenchPage = lazy(() =>
     default: m.VerificationWorkbenchPage,
   })),
 );
+const AdminDashboardOverview = lazy(() =>
+  import('@/features/admin/AdminDashboardOverview').then((m) => ({
+    default: m.AdminDashboardOverview,
+  })),
+);
 const FinancePaymentsPanel = lazy(() =>
   import('@/features/admin/FinancePaymentsPanel').then((m) => ({
     default: m.FinancePaymentsPanel,
@@ -166,7 +171,7 @@ function AppRoutes({
   const [createOpen, setCreateOpen] = useState(false);
 
   const [activeUnitId, setActiveUnitId] = useState(portal.units[0]?.id ?? '');
-  const [activeAdminTab, setActiveAdminTab] = useState<AdminTabId>('verify');
+  const [activeAdminTab, setActiveAdminTab] = useState<AdminTabId>('overview');
 
   const resolvedUnitId = (() => {
     if (portal.units.some((u) => u.id === activeUnitId)) {
@@ -178,7 +183,9 @@ function AppRoutes({
 
   useEffect(() => {
     if (!auth.user) return;
-    if (auth.hasAnyRole('verifier', 'tenant_admin', 'unit_admin')) {
+    if (auth.hasAnyRole('tenant_admin')) {
+      setActiveAdminTab('overview');
+    } else if (auth.hasAnyRole('verifier', 'unit_admin')) {
       setActiveAdminTab('verify');
     } else if (auth.hasAnyRole('treasurer')) {
       setActiveAdminTab('finance');
@@ -336,6 +343,13 @@ function AppRoutes({
         activeTab={activeAdminTab}
         onSelectTab={setActiveAdminTab}
       >
+        {activeAdminTab === 'overview' && (
+          <AdminDashboardOverview
+            tenantSlug={tenantSlug}
+            units={portal.units}
+            onNavigateTab={setActiveAdminTab}
+          />
+        )}
         {activeAdminTab === 'verify' && (
           <VerificationWorkbenchPage tenantSlug={tenantSlug} activeUnitId={resolvedUnitId} />
         )}

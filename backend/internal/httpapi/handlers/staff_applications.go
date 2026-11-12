@@ -431,3 +431,36 @@ func decodeKeysetCursor(encoded string) (time.Time, uuid.UUID, error) {
 	return ts, id, nil
 }
 
+// GetDashboardStats handles GET /api/v1/admin/dashboard/stats for committee overview.
+func (h *StaffApplicationsHandler) GetDashboardStats(w http.ResponseWriter, r *http.Request) {
+	tenant, principal, ok := requireAuth(w, r)
+	if !ok {
+		return
+	}
+
+	var unitID *uuid.UUID
+	if rawUnit := strings.TrimSpace(r.URL.Query().Get("unit_id")); rawUnit != "" {
+		parsed, err := uuid.Parse(rawUnit)
+		if err != nil || parsed == uuid.Nil {
+			respond.Error(w, http.StatusUnprocessableEntity, "VALIDATION_ERROR", "Parameter unit_id tidak valid.", map[string]string{
+				"unit_id": "Unit ID tidak valid.",
+			})
+			return
+		}
+		if !middleware.HasUnitAccess(principal, parsed, domain.RoleTenantAdmin, domain.RoleUnitAdmin, domain.RoleVerifier, domain.RoleExaminer, domain.RoleTreasurer, domain.RolePrincipal) {
+			respond.Error(w, http.StatusForbidden, "FORBIDDEN", "Anda tidak memiliki akses ke unit ini.", nil)
+			return
+		}
+		unitID = &parsed
+	}
+
+	stats, err := h.Service.GetDashboardStats(r.Context(), tenant.ID, unitID)
+	if err != nil {
+		respond.Error(w, http.StatusInternalServerError, "DASHBOARD_STATS_ERROR", "Gagal memuat ringkasan statistik pendaftaran.", nil)
+		return
+	}
+
+	respond.JSON(w, http.StatusOK, stats, nil)
+}
+
+

@@ -166,6 +166,15 @@ func NewRouter(deps Dependencies) http.Handler {
 					admin.With(middleware.RequireRoles(
 						domain.RoleTenantAdmin,
 						domain.RoleUnitAdmin,
+						domain.RoleVerifier,
+						domain.RoleExaminer,
+						domain.RoleTreasurer,
+						domain.RolePrincipal,
+					)).Get("/dashboard/stats", staffAppsHandler.GetDashboardStats)
+
+					admin.With(middleware.RequireRoles(
+						domain.RoleTenantAdmin,
+						domain.RoleUnitAdmin,
 						domain.RolePrincipal,
 					)).Get("/tenant/settings", adminTenantHandler.GetSettings)
 

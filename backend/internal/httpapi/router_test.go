@@ -1427,5 +1427,33 @@ func TestOperationalEndpointsAndProductionHardening(t *testing.T) {
 	if centralHook.Code != http.StatusOK || !strings.Contains(centralHook.Body.String(), `"paid"`) {
 		t.Fatalf("central midtrans webhook failed: %d (%s)", centralHook.Code, centralHook.Body.String())
 	}
+
+	// Verify Admin Dashboard Stats endpoint
+	statsUnauth := doJSONRequest(t, router, http.MethodGet, "/api/v1/admin/dashboard/stats", "demo-pmbm", "", nil)
+	if statsUnauth.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 for unauthenticated dashboard stats, got %d", statsUnauth.Code)
+	}
+
+	statsGuardian := doJSONRequest(t, router, http.MethodGet, "/api/v1/admin/dashboard/stats", "demo-pmbm", pmbmToken, nil)
+	if statsGuardian.Code != http.StatusForbidden {
+		t.Fatalf("expected 403 for guardian accessing admin dashboard stats, got %d", statsGuardian.Code)
+	}
+
+	adminLoginRec := doJSONRequest(t, router, http.MethodPost, "/api/v1/auth/login", "demo-pmbm", "", map[string]string{
+		"identifier": "admin@sekolah.sch.id",
+		"password":   "DemoPass123!",
+	})
+	if adminLoginRec.Code == http.StatusOK {
+		var admEnv struct {
+			Data struct {
+				AccessToken string `json:"access_token"`
+			} `json:"data"`
+		}
+		_ = json.Unmarshal(adminLoginRec.Body.Bytes(), &admEnv)
+		statsOk := doJSONRequest(t, router, http.MethodGet, "/api/v1/admin/dashboard/stats", "demo-pmbm", admEnv.Data.AccessToken, nil)
+		if statsOk.Code != http.StatusOK || !strings.Contains(statsOk.Body.String(), `"daily_trends"`) {
+			t.Fatalf("expected 200 for tenant_admin dashboard stats, got %d (%s)", statsOk.Code, statsOk.Body.String())
+		}
+	}
 }
 

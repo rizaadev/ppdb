@@ -58,6 +58,9 @@
   border-top: 1px solid var(--border-default);
 }
 
+/* ==========================================================================
+   OFFICIAL PRINT ENGINE STYLES (Kop Surat Dinas, Kartu Ujian, SKL, Kwitansi)
+   ========================================================================== */
 .printSheet {
   background-color: #ffffff;
   color: #111827;
@@ -67,31 +70,114 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-.printHeader {
-  border-bottom: 2px solid #111827;
+.kopSurat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
   padding-bottom: var(--space-3);
+  border-bottom: 4px double #111827;
+  position: relative;
+}
+
+.kopLogo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.kopText {
+  flex: 1;
+  text-align: center;
+}
+
+.kopYayasan {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #374151;
+}
+
+.kopLembaga {
+  font-size: 1.15rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #111827;
+  margin: 2px 0;
+}
+
+.kopPanitia {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--brand-primary, #1e40af);
+}
+
+.kopAlamat {
+  font-size: 0.72rem;
+  color: #4b5563;
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
+.printDocMeta {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-3);
+  align-items: center;
+  font-size: 0.8rem;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: var(--space-2);
 }
 
 .printTitle {
-  font-size: 1.125rem;
+  font-size: 1.1rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   text-align: center;
   padding: var(--space-2) 0;
-  border-bottom: 1px solid var(--border-default);
+}
+
+.examCardBody {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.pasFotoBox {
+  width: 105px;
+  height: 140px;
+  border: 2px dashed #9ca3af;
+  border-radius: 4px;
+  background-color: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 600;
+  text-align: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.pasFotoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .printTable {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
 }
 
 .printTable th,
@@ -103,25 +189,139 @@
 }
 
 .printTable th {
-  width: 38%;
+  width: 32%;
   color: #4b5563;
   font-weight: 600;
 }
 
-.printFooter {
+.noticeBox {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: var(--space-3);
+  font-size: 0.78rem;
+  color: #334155;
+}
+
+.noticeTitle {
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #0f172a;
+}
+
+.sklDecisionBox {
+  margin: var(--space-3) 0;
+  padding: var(--space-4);
+  background-color: #f0fdf4;
+  border: 2px solid #16a34a;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.sklDecisionTitle {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #166534;
+  letter-spacing: 0.1em;
+}
+
+.sklDecisionSub {
+  font-size: 0.85rem;
+  color: #15803d;
+  margin-top: 4px;
+}
+
+.receiptBox {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-4);
+  align-items: center;
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: var(--space-4);
+}
+
+.terbilangBox {
+  font-style: italic;
+  font-weight: 600;
+  color: #1e293b;
+  background-color: #e2e8f0;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  margin-top: 4px;
+}
+
+.lunasStamp {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #16a34a;
+  color: #16a34a;
+  transform: rotate(-7deg);
+  border-radius: 8px;
+  padding: 6px 16px;
+  text-align: center;
+}
+
+.lunasStampText {
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  line-height: 1;
+}
+
+.lunasStampDate {
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-top: 3px;
+  letter-spacing: 0.05em;
+}
+
+.printSignatures {
   margin-top: var(--space-4);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.signatureCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.signatureSpace {
+  height: 52px;
+}
+
+.signatureLine {
+  border-top: 1px solid #111827;
+  width: 80%;
+  padding-top: 4px;
+  font-weight: 700;
+}
+
+.printFooter {
+  margin-top: var(--space-3);
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   gap: var(--space-4);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: var(--space-2);
 }
 
 @media print {
   .printSheet {
     border: none;
     border-radius: 0;
-    padding: 12mm;
+    padding: 8mm 12mm;
   }
 }
-

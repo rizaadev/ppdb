@@ -13,6 +13,8 @@ tmp-bin/
 *.test
 *.out
 backend/bin/
+backend/pbdb-server
+backend/pbdb-migrate
 backend/web/dist/assets/
 
 # Frontend dependencies & build

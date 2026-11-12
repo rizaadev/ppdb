@@ -4,6 +4,7 @@ import {
   ClipboardCheck,
   Download,
   FileSpreadsheet,
+  LayoutDashboard,
   LogOut,
   Menu,
   PanelLeftClose,
@@ -18,7 +19,7 @@ import type { CurrentUser, TenantRole, UnitSummary } from '@/core/types/domain';
 import { Button } from '@/components/ui/Button';
 import styles from './AdminShell.module.css';
 
-export type AdminTabId = 'verify' | 'finance' | 'ranking' | 'export' | 'staff' | 'settings';
+export type AdminTabId = 'overview' | 'verify' | 'finance' | 'ranking' | 'export' | 'staff' | 'settings';
 
 const ROLE_LABELS: Record<TenantRole, string> = {
   tenant_admin: 'Admin Instansi',
@@ -35,6 +36,12 @@ const ADMIN_NAV: Array<{
   topbarTitle: string;
   icon: typeof ClipboardCheck;
 }> = [
+  {
+    id: 'overview',
+    label: 'Dashboard Ringkasan',
+    topbarTitle: 'Dashboard Eksekutif & Ringkasan Pendaftaran',
+    icon: LayoutDashboard,
+  },
   {
     id: 'verify',
     label: 'Verifikasi & Pendaftar',

@@ -572,3 +572,45 @@ export interface PlatformCreateTenantResult {
     full_name: string;
   } | null;
 }
+
+export interface DailyTrendPoint {
+  date: string;
+  count: number;
+}
+
+export interface TrackStatItem {
+  track_id: string;
+  track_code: string;
+  display_name: string;
+  unit_id: string;
+  unit_name: string;
+  quota: number;
+  applicant_count: number;
+  accepted_count: number;
+}
+
+export interface StatusCountItem {
+  status: string;
+  count: number;
+}
+
+export interface DashboardStats {
+  total_applicants: number;
+  draft_count: number;
+  submitted_count: number;
+  verification_count: number;
+  revision_required_count: number;
+  verified_count: number;
+  accepted_count: number;
+  waitlisted_count: number;
+  rejected_count: number;
+  re_enrolled_count: number;
+  total_revenue_idr: number;
+  pending_revenue_idr: number;
+  pending_manual_payments: number;
+  daily_trends: DailyTrendPoint[];
+  track_stats: TrackStatItem[];
+  status_breakdown: StatusCountItem[];
+  recent_activities: TenantAuditLogItem[];
+}
+

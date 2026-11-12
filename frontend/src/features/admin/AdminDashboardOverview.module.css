@@ -1,0 +1,196 @@
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--space-3);
+}
+
+.kpiCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.kpiCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-popover);
+}
+
+.kpiHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kpiIconWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kpiLabel {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.kpiValue {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
+
+.kpiSub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.twoColGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 992px) {
+  .twoColGrid {
+    grid-template-columns: 3fr 2fr;
+  }
+}
+
+.chartCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chartTitle {
+  font-size: var(--text-h3);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.chartSub {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+.svgWrap {
+  width: 100%;
+  height: 220px;
+  position: relative;
+}
+
+.quickActionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-2);
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.actionBtn:hover {
+  background-color: var(--brand-tint);
+  border-color: var(--brand-border);
+  color: var(--brand-primary);
+}
+
+.trackList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.trackItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+}
+
+.trackItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--text-caption);
+}
+
+.trackName {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.trackProgressBg {
+  width: 100%;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background-color: var(--border-default);
+  overflow: hidden;
+}
+
+.trackProgressFill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  transition: width 0.5s ease;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.activityItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border-default);
+  font-size: var(--text-caption);
+}
+
+.activityItem:last-child {
+  border-bottom: none;
+}
+
+.activityMeta {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}

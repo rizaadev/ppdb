@@ -1,7 +1,9 @@
 .hero {
-  background-color: var(--bg-surface);
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-canvas) 100%);
   border-bottom: 1px solid var(--border-default);
   padding: var(--space-8) 0;
+  position: relative;
+  overflow: hidden;
 }
 
 @media (min-width: 768px) {
@@ -18,7 +20,7 @@
 
 @media (min-width: 1024px) {
   .heroGrid {
-    grid-template-columns: 1.35fr 0.9fr;
+    grid-template-columns: 1.3fr 0.9fr;
   }
 }
 
@@ -26,27 +28,30 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: var(--radius-pill);
   background-color: var(--brand-tint);
   border: 1px solid var(--brand-border);
   color: var(--brand-primary);
   font-size: var(--text-badge);
   font-weight: 700;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
+  box-shadow: var(--shadow-card);
 }
 
 .heroTitle {
-  font-size: var(--text-hero);
-  font-weight: 700;
+  font-size: clamp(2rem, 4.2vw, 3rem);
+  font-weight: 800;
   line-height: 1.15;
   color: var(--text-primary);
   margin-bottom: var(--space-3);
+  letter-spacing: -0.02em;
 }
 
 .heroSub {
   font-size: var(--text-body);
   color: var(--text-secondary);
+  line-height: 1.6;
   margin-bottom: var(--space-6);
 }
 
@@ -54,37 +59,243 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.statsRibbon {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-default);
+}
+
+@media (min-width: 640px) {
+  .statsRibbon {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.statNumber {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--brand-primary);
+  line-height: 1.1;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Countdown Card */
+.countdownCard {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-popover);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.countdownHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: var(--text-label);
+}
+
+.countdownGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+
+.countdownBlock {
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+  text-align: center;
+}
+
+.countdownNumber {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: var(--brand-primary);
+  line-height: 1;
+}
+
+.countdownLabel {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
 }
 
 .section {
-  padding: var(--space-8) 0 0;
+  padding: var(--space-10) 0;
+}
+
+.sectionAlt {
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
 }
 
 .sectionHeader {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2);
-  margin-bottom: var(--space-4);
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto var(--space-8);
+}
+
+.sectionPill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background-color: var(--brand-tint);
+  color: var(--brand-primary);
+  font-size: var(--text-badge);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-2);
 }
 
 .sectionTitle {
-  font-size: var(--text-h2);
-  font-weight: 700;
+  font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+  font-weight: 800;
   color: var(--text-primary);
+  margin-bottom: var(--space-2);
+  letter-spacing: -0.015em;
 }
 
+.sectionSub {
+  font-size: var(--text-body);
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* 7-Step Admission Flow Timeline */
+.timelineGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .timelineGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .timelineGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stepCard {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: relative;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.stepCard:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-popover);
+}
+
+.stepBadge {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  background-color: var(--brand-primary);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepTitle {
+  font-size: var(--text-h3);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+
+.stepDesc {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Facilities Showcase Grid */
+.facilityGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.facilityCard {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.facilityIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background-color: var(--brand-tint);
+  color: var(--brand-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-2);
+}
+
+/* Track Card & Progress */
 .trackCard {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: var(--space-4);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
 }
 
 .trackTitle {
-  font-size: var(--text-h3);
-  font-weight: 700;
+  font-size: var(--text-h2);
+  font-weight: 800;
   color: var(--text-primary);
   margin-bottom: var(--space-1);
 }
@@ -92,6 +303,7 @@
 .trackDesc {
   font-size: var(--text-caption);
   color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 .quotaMeta {
@@ -100,6 +312,7 @@
   font-size: var(--text-caption);
   color: var(--text-secondary);
   margin-bottom: 6px;
+  font-weight: 600;
 }
 
 .progressTrack {
@@ -132,6 +345,111 @@
   color: var(--text-secondary);
 }
 
+.paymentBadgesRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-subtle);
+}
+
+.payPill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+}
+
+/* Requirements Table Checklist */
+.reqCard {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
+}
+
+.reqList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.reqItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+}
+
+.reqItemTitle {
+  font-size: var(--text-label);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.reqItemSub {
+  font-size: var(--text-caption);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* FAQ Accordion */
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.faqItem {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
+
+.faqItem[open] {
+  border-color: var(--brand-border);
+}
+
+.faqSummary {
+  padding: var(--space-4) var(--space-5);
+  font-weight: 700;
+  font-size: var(--text-label);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  list-style: none;
+  user-select: none;
+  color: var(--text-primary);
+}
+
+.faqSummary::-webkit-details-marker {
+  display: none;
+}
+
+.faqBody {
+  padding: 0 var(--space-5) var(--space-4);
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Fast Check Status Card */
 .statusForm {
   display: grid;
   gap: var(--space-3);
@@ -157,3 +475,27 @@
   align-items: center;
 }
 
+/* Floating WhatsApp Helpdesk Button */
+.floatingWa {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: var(--radius-pill);
+  background-color: #25d366;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  text-decoration: none;
+}
+
+.floatingWa:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.55);
+}
